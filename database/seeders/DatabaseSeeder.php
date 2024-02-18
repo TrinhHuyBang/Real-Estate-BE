@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(PostTypeSeeder::class);
         $this->call(FieldSeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(PostSeeder::class);
+        $this->call(PostImageSeeder::class);
         // \App\Models\User::factory(10)->create();
     }
 }
