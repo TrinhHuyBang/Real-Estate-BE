@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/verify-success', function () {
     return view('notification.verifySuccess');
-})->name('verifySucess');
+})->name('verifySuccess');
 
 Route::get('/verify-fail', function () {
     return view('notification.verifyFail');
