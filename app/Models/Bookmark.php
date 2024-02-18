@@ -15,8 +15,6 @@ class Bookmark extends Model
         'post_id',
     ];
 
-    public $timestamps = false;
-
     // public function post() {
     //     return BelongsTo(Post::class, 'user_id');
     // } 

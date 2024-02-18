@@ -23,6 +23,7 @@ class PostImageRepo implements PostImageRepoInterface
     }
     public function delete($id)
     {
+        PostImage::where('post_id', $id)->delete();
     }
 
     public function getByPostId($postId)

@@ -32,15 +32,30 @@ class Post extends Model
         'published_at',
         'created_at',
         'updated_at',
+        'expired_at',
+        'price_order',
     ];
 
     protected $attributes = [
-        'status' => false,
+        'status' => 0,
         'published_at' => null,
+        'legal_documents' => null,
+        'furniture' => null,
+        'bedroom' => null,
+        'toilet'=> null,
+        'floor' => null,
+        'street' => null,
+        'project_id' => null,
+        'expired_at' => null,
     ];
 
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(PostImage::class, 'post_id');
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('avatar')->nullable();
+            $table->text('avatar')->nullable();
             $table->string('address')->nullable();
             $table->string('phone');
             $table->string('tax_code')->nullable();
@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->tinyInteger('role'); // Định danh tài khoản của người dùng (1: người dùng thường,
+                                        // 2: tài khoản doanh nghiệp, 3: nhà môi giới, 4: công ty môi giới) 
             $table->rememberToken();
             $table->timestamps();
         });

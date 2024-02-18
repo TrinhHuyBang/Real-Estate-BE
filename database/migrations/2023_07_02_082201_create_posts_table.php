@@ -33,12 +33,13 @@ return new class extends Migration
             $table->integer('floor')->nullable();  // Số tầng
             $table->integer('size');   // Diện tích
             $table->unsignedBigInteger('price')->nullable(); // Giá cả
-            $table->enum('unit',['VND', 'Giá/m2', 'Thỏa Thuận']);  // Đơn vị
+            $table->enum('unit',['VND', 'VND/m2', 'Thỏa Thuận']);  // Đơn vị
             $table->unsignedBigInteger('type_id');
             $table->foreign('type_id')->references('id')->on('post_types');
             $table->tinyInteger('status');  // Trạng thái bài đăng, (đã duyệt 1, chờ duyệt 0, hết hạn 2, đã xoá 3, không duyệt 4)
-            $table->time('published_at')->nullable(); // Thời gian lúc bài đăng được duyệt
-            $table->float('price_order', 8, 2);
+            $table->dateTime('published_at')->nullable(); // Thời gian lúc bài đăng được duyệt
+            $table->dateTime('expired_at')->nullable(); // Thời gian mà bài đăng hết hạn
+            $table->float('price_order', 8, 2); // giá theo đơn vị VND/m2 hoặc VND/Tháng
             $table->timestamps();
         });
     }

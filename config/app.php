@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Facade;
 
 return [
 
+    'mail_from_address' => env('MAIL_FROM_ADDRESS', ''),
+    'mail_from_name' => env('MAIL_FROM_NAME', ''),
+    'MAIL_PASSWORD' => env('MAIL_PASSWORD'),
+    
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -69,7 +73,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Ho_Chi_Minh',
 
     /*
     |--------------------------------------------------------------------------
@@ -177,6 +181,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
 
     ],
 

@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/verify-success', function () {
+    return view('notification.verifySuccess');
+})->name('verifySucess');
+
+Route::get('/verify-fail', function () {
+    return view('notification.verifyFail');
+})->name('verifyFail');

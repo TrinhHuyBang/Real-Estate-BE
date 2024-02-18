@@ -15,11 +15,21 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('enterprise_id');
+            $table->foreign('enterprise_id')->references('id')->on('enterprises');
             $table->string('name');
-            $table->string('city');
+            $table->string('province');
             $table->string('district');
-            $table->string('commune');
+            $table->string('ward');
             $table->string('street');
+            $table->string('address');
+            $table->tinyInteger('status')->nullable();
+            $table->text('description');
+            $table->integer('apartment');
+            $table->integer('buiding');
+            $table->integer('price');
+            $table->float('size');
+            $table->enum('size_unit', ['m2, ha']);
             $table->timestamps();
         });
     }

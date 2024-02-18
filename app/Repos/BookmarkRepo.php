@@ -36,8 +36,8 @@ class BookmarkRepo implements BookmarkRepoInterface
         return Bookmark::where('post_id', $postId)->where('user_id', $userId)->first();
     }
 
-    public function listPostOrderBy($userId, $orderBy, $orderWith)
+    public function listPostOrderBy($postType, $orderBy, $orderWith)
     {
-        return Bookmark::rightJoin('posts', 'bookmarks.post_id', '=', 'posts.id')->where('bookmarks.user_id', $userId)->where('status', 1)->orderBY($orderWith, $orderBy)->get();
+        return Bookmark::rightJoin('posts', 'bookmarks.post_id', '=', 'posts.id')->where('bookmarks.user_id', auth()->user()->id)->whereIn('type_id', $postType)->where('status', config('status.displayPost'))->orderBY($orderWith, $orderBy)->get();
     }
 }

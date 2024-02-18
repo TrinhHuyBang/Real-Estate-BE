@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PostResource;
 use App\Repos\BookmarkRepo;
 use App\Traits\HandleJsonResponse;
 use App\Traits\OrderByKey;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 
 class BookmarkController extends Controller
@@ -22,25 +24,24 @@ class BookmarkController extends Controller
     }
     public function createOrDelete(Request $request)
     {
-        $userId = $request->get('user_id');
+        $userId = auth()->user()->id;
         $postId = $request->get('post_id');
         $bookmark = $this->bookmarkRepo->getByPostIdAndUserId($postId, $userId);
         try {
             if (!$bookmark) {
                 $new_bookmark = $this->bookmarkRepo->create(['user_id' => $userId, 'post_id' => $postId]);
-                return $this->handleSuccessJsonResponse($new_bookmark, 'success');
             } else {
                 $this->bookmarkRepo->delete($bookmark->id);
             }
+            return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::info($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
 
     /**
-     * Show the pricing plan
-     * GET /pricing
+     * Get list post bookmark 
+     * GET /list-bookmark
      *
      * @param Request $request
      * @return JsonResponse
@@ -48,13 +49,23 @@ class BookmarkController extends Controller
     public function listPost(Request $request)
     {
         $order = $request->get('order_by');
-        $user_id = $request->get('user_id');
+        $type = $request->get('type');
         try {
             $orderKey = $this->getOrderByKey($order);
             $orderBy = $orderKey['order_by'];
             $orderWith = $orderKey['order_with'];
-            $bookmarks = $this->bookmarkRepo->listPostOrderBy($user_id,$orderBy,$orderWith);
-            return $this->handleSuccessJsonResponse($bookmarks, 'thanh cong');
+            if($type == 'sell') {
+                $postType = config('postType.sell');
+            } else {
+                $postType = config('postType.rent');
+            }
+            $bookmarks = $this->bookmarkRepo->listPostOrderBy($postType, $orderBy, $orderWith);
+            $bookmarks = PostResource::collection($bookmarks)->values()->all();
+            $perPage = 5;
+            $currentPage = request('page', 1);
+            $pagedResults = array_slice($bookmarks, ($currentPage - 1) * $perPage, $perPage);
+            $bookmarks = new LengthAwarePaginator($pagedResults, count($bookmarks), $perPage, $currentPage);
+            return $this->handleSuccessJsonResponse($bookmarks);
         } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);
         }
