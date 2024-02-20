@@ -68,7 +68,7 @@ class AuthController extends Controller
 
             //Email đã verify chưa
             if(!$user->email_verified_at) {
-                throw new Exception("Email chưa được xác thực");
+                throw new Exception("Tài khoản chưa được xác thực");
             }
 
             return $this->respondWithToken($token);
