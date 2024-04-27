@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Repos\UserRepo;
 use App\Traits\HandleJsonResponse;
@@ -12,9 +13,14 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Mail\SendEmail;
+use App\Repos\BrokerageAreaRepo;
+use App\Repos\BrokerRepo;
+use App\Repos\EnterpriseRepo;
 use App\Repos\PasswordResetRepo;
+use App\Repos\SubFieldRepo;
 use App\Repos\VerifyEmailTokenRepo;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 class AuthController extends Controller
 {
@@ -22,17 +28,32 @@ class AuthController extends Controller
     protected UserRepo $userRepo;
     protected PasswordResetRepo $passwordResetRepo;
     protected VerifyEmailTokenRepo $verifyEmailTokenRepo;
+    protected EnterpriseRepo $enterpriseRepo;
+    protected SubFieldRepo $subFieldRepo;
+    protected BrokerRepo $brokerRepo;
+    protected BrokerageAreaRepo $brokerageAreaRepo;
     /**
      * Create a new AuthController instance.
      *
      * @return void
      */
-    public function __construct(UserRepo $userRepo, PasswordResetRepo $passwordResetRepo, VerifyEmailTokenRepo $verifyEmailTokenRepo)
+    public function __construct(
+        UserRepo $userRepo,
+        PasswordResetRepo $passwordResetRepo,
+        VerifyEmailTokenRepo $verifyEmailTokenRepo,
+        EnterpriseRepo $enterpriseRepo,
+        SubFieldRepo $subFieldRepo,
+        BrokerRepo $brokerRepo,
+        BrokerageAreaRepo $brokerageAreaRepo)
     {
         $this->middleware('auth:api', ['except' => ['login', 'register', 'unauth', 'resetPassword', 'forgetPassword', 'verifyEmail']]);
         $this->userRepo = $userRepo;
         $this->passwordResetRepo = $passwordResetRepo;
         $this->verifyEmailTokenRepo = $verifyEmailTokenRepo;
+        $this->enterpriseRepo = $enterpriseRepo;
+        $this->subFieldRepo = $subFieldRepo;
+        $this->brokerRepo = $brokerRepo;
+        $this->brokerageAreaRepo = $brokerageAreaRepo;
     }
 
     /**
@@ -70,7 +91,6 @@ class AuthController extends Controller
             if(!$user->email_verified_at) {
                 throw new Exception("Tài khoản chưa được xác thực");
             }
-
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             Log::info($e);
@@ -254,6 +274,16 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $user->bookmark = $this->userRepo->getNumberBookmark($user->id);
+        if($user->role == UserRole::BROKER) {
+            $user->broker_infor = $this->brokerRepo->getDetailByUserId($user->id);
+        }
+        if($user->role == UserRole::USER) {
+            $user->registeredBroker = $this->brokerRepo->checkRegisteredByUserId($user->id);
+            $user->registeredEnterprise = $this->enterpriseRepo->checkRegisteredByUserId($user->id);
+        }
+        if($user->role == UserRole::ENTERPRISE) {
+            $user->enterprise_infor = $this->enterpriseRepo->getDetailByUserId($user->id);
+        }
         return $this->handleSuccessJsonResponse($user);
     }
 
@@ -279,17 +309,34 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
+        $user = auth()->user();
         $avatar = $request->get('avatar');
         $name = $request->get('name');
-        $tax = $request->get('tax_code');
         try {
-            $info = $this->userRepo->edit(auth()->user()->id, ['avatar' => $avatar, 'name' => $name, 'tax_code' => $tax]);
-            return $this->handleSuccessJsonResponse($info, 'success');
+            $info = $this->userRepo->edit($user->id, ['avatar' => $avatar, 'name' => $name]);
+
+            //Cập nhật thông tin nếu là nhà môi giới
+            if($user->role == UserRole::BROKER) {
+                $broker_infor = $request->get('broker_infor');
+                $data = [
+                    'address' => Arr::get($broker_infor, 'address'),
+                    'description' => Arr::get($broker_infor, 'description'),
+                ];
+                $broker = $this->brokerRepo->updateByUserId($user->id, $data);
+                $brokerageAreas = Arr::get($broker_infor, 'areas') ? Arr::get($broker_infor, 'areas') : [];
+                $this->brokerageAreaRepo->deleteByBrokerId($broker->id);
+                foreach ($brokerageAreas as $brokerageArea) {
+                    $brokerageArea['broker_id'] = $broker->id;
+                    $brokerageArea = $this->brokerageAreaRepo->create($brokerageArea);
+                    if(!$brokerageArea) {
+                        throw new Exception('Cập khu vực và loại môi giới không thành công');
+                    }
+                }
+            }
+            return $this->handleSuccessJsonResponse($info);
         } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);
         }
-
-        return $info;
     }
 
     public function updatePassword(Request $request)
@@ -322,6 +369,55 @@ class AuthController extends Controller
                 throw new Exception('Mật khẩu không đúng');
             }
         } catch (Exception $e) {
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+    public function enterpriseRegister(Request $request)
+    {
+        try {
+            $data = $request->except('sub_field');
+            $sub_fields = $request->get('sub_field');
+            $data['user_id'] = auth()->user()->id;
+            $enterprise = $this->enterpriseRepo->create($data);
+            if(!$enterprise) {
+                throw new Exception('Thêm yêu cầu không thành công');
+            }
+            foreach ($sub_fields as $sub_field) {
+                $subField = $this->subFieldRepo->create(['enterprise_id' => $enterprise->id, 'field_id' => $sub_field]);
+                if(!$subField) {
+                    throw new Exception('Thêm lĩnh vực phụ không thành công');
+                }
+            }
+            return $this->handleSuccessJsonResponse();
+        } catch (Exception $e) {
+            Log::error($e);
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+    public function brokerRegister(Request $request)
+    {
+        try {
+            $data = $request->except('brokerageAreas');
+            $brokerageAreas = $request->get('brokerageAreas');
+            $data['user_id'] = auth()->user()->id;
+            Log::info('Area : '. json_encode($brokerageAreas));
+            Log::info('Data : ' . json_encode($data));
+            $broker = $this->brokerRepo->create($data);
+            if(!$broker) {
+                throw new Exception('Thêm yêu cầu không thành công');
+            }
+            foreach ($brokerageAreas as $brokerageArea) {
+                $brokerageArea['broker_id'] = $broker->id;
+                $brokerageArea = $this->brokerageAreaRepo->create($brokerageArea);
+                if(!$brokerageArea) {
+                    throw new Exception('Thêm khu vực và loại môi giới không thành công');
+                }
+            }
+            return $this->handleSuccessJsonResponse();
+        } catch (Exception $e) {
+            Log::error($e);
             return $this->handleExceptionJsonResponse($e);
         }
     }

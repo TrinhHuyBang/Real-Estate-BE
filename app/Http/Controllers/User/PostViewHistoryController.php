@@ -87,7 +87,8 @@ class PostViewHistoryController extends Controller
                 $user_id = $request->get('guest_id');
             }
             $latestHistory = $this->postViewHistoryRepo->latestHistory($user_id);
-            $postViewHistories = $this->postViewHistoryRepo->listPostByUserId($user_id, $latestHistory->post_id);
+            $latestHistoryId = $latestHistory ? $latestHistory->post_id : null;
+            $postViewHistories = $this->postViewHistoryRepo->listPostByUserId($user_id, $latestHistoryId);
             $postViewHistories = PostResource::collection($postViewHistories)->values()->all();
             $perPage = 4;
             $currentPage = request('page', 1);

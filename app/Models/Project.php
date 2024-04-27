@@ -10,10 +10,31 @@ class Project extends Model
     use HasFactory;
 
     protected $fillable = [
+        'enterprise_id',
+        'type_id',
         'name',
-        'city',
+        'province',
         'district',
-        'commune',
+        'ward',
         'street',
+        'address',
+        'note',
+        'project_status',
+        'description',
+        'apartment',
+        'building',
+        'start_price',
+        'end_price',
+        'size',
+        'size_unit',
+        'scale',
+        'legal_documents',
+        'builders',
+        'designer',
+        'status'
+    ];
+
+    protected $attributes = [
+        'status' => 0,
     ];
 }

@@ -4,23 +4,29 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
+use App\Repos\NotificationRepo;
 use App\Repos\PostRepo;
 use App\Traits\HandleJsonResponse;
 use App\Traits\OrderByKey;
+use App\Enums\NotificationType;
+Use App\Enums\NotificationAction;
+use App\Events\Notify\PostNotifyEvent;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class PostController extends Controller
+class AdminPostController extends Controller
 {
     use HandleJsonResponse;
     use OrderByKey;
     protected PostRepo $postRepo;
+    protected NotificationRepo $notificationRepo;
 
-    public function __construct(PostRepo $postRepo)
+    public function __construct(PostRepo $postRepo, NotificationRepo $notificationRepo)
     {
         $this->postRepo = $postRepo;
+        $this->notificationRepo = $notificationRepo;
     }
 
     // Lấy ra danh sách tất cả các bài đăng đang chờ duyệt
@@ -67,7 +73,16 @@ class PostController extends Controller
             $day_display = 14;
             $published_at = Carbon::now();
             $expired_at = Carbon::now()->addDays($day_display);
-            $this->postRepo->edit($id, ['status' => config('status.displayPost'), 'published_at' => $published_at, 'expired_at' => $expired_at]);
+            $post = $this->postRepo->edit($id, ['status' => config('status.displayPost'), 'published_at' => $published_at, 'expired_at' => $expired_at]);
+            $notification = $this->notificationRepo->create(
+                [
+                    'user_id' => $post->user_id,
+                    'type' => NotificationType::POST,
+                    'post_project_id',
+                    'action' => NotificationAction::ACCEPT,
+                ]
+            );
+            new PostNotifyEvent($notification);
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);

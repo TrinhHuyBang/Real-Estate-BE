@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\Notify\PostNotifyEvent;
 use Illuminate\Console\Command;
 use App\Repos\PostRepo;
 use Exception;
@@ -44,9 +45,15 @@ class ExpirePost extends Command
     public function handle()
     {
         try {
-            $this->postRepo->updateExpiredPost();
+            event(new PostNotifyEvent(['user_id' => 31]));
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e);
+            //throw $th;
         }
+        // try {
+        //     $this->postRepo->updateExpiredPost();
+        // } catch (Exception $e) {
+        //     Log::info($e);
+        // }
     }
 }

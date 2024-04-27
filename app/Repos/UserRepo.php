@@ -46,10 +46,10 @@ class UserRepo implements UserRepoInterface
     }
 
     public function getDetail($id) {
-        $user =  User::select(['name', 'email', 'phone', 'avatar', 'address'])->where('id', $id)->first();
+        $user =  User::select(['name', 'email', 'phone', 'avatar'])->where('id', $id)->first();
         $display_count = Post::where('user_id', $id)->where('status', 1)->count();
         $expired_count = Post::where('user_id', $id)->where('status', 2)->count();
-        $all_count = Post::where('user_id', $id)->count();
+        $all_count = Post::where('user_id', $id)->whereIn('status', [config('status.expired'), config('status.displayPost')])->count();
         $user->display_count = $display_count;
         $user->expired_count = $expired_count;
         $user->all_count = $all_count;

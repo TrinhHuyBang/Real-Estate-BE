@@ -154,7 +154,7 @@ class PostController extends Controller
     /**
      * Cập nhật thông tin cho bài đăng
      * PUT /
-     * @param Int $id
+     * @param int $id
      * @param Request $request
      * @return JsonResponse
      */
@@ -240,6 +240,7 @@ class PostController extends Controller
             $district = $request->get('district');
             $ward = $request->get('ward');
             $type = $request->get('type');
+            $project_id = $request->get('project_id');
             $priceSelected = $request->get('priceSelected');
             $data = [
                 'endPrice' => $endPrice ? $endPrice : 9999999999,
@@ -253,7 +254,8 @@ class PostController extends Controller
                 'order_by' => $orderKey['order_by'],
                 'order_with' => $orderKey['order_with'],
                 'type' => $type,
-                'priceSelected' => $priceSelected
+                'priceSelected' => $priceSelected,
+                'project_id' => $project_id
             ];
             $posts = $this->postRepo->listPost($data);
             $posts = PostResource::collection($posts)->values()->all();

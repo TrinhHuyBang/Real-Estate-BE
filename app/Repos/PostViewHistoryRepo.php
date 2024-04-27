@@ -17,7 +17,6 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     }
     public function create($data)
     {
-        Log::info($data);
         return PostViewHistory::create($data);
     }
     public function edit($id, $data = [])

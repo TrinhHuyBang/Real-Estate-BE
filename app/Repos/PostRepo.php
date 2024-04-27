@@ -10,6 +10,7 @@ use App\Models\PostViewHistory;
 use App\Models\Project;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -69,9 +70,13 @@ class PostRepo implements PostRepoInterface
     public function listPost($data)
     {
         $query = Post::where('status', config('status.displayPost'))
-            ->where('size', '>=', $data['startSize'])->where('size', '<=', $data['endSize'])
-            ->where('province', 'like', '%' . $data['province'] . '%')->where('district', 'like', '%' . $data['district'] . '%')
+            ->where('size', '>=', $data['startSize'])->where('size', '<=', $data['endSize']);
+        if(Arr::get($data, 'project_id')) {
+            $query->where('project_id', Arr::get($data, 'project_id'));
+        } else {
+            $query->where('province', 'like', '%' . $data['province'] . '%')->where('district', 'like', '%' . $data['district'] . '%')
             ->where('ward', 'like', '%' . $data['ward'] . '%');
+        }
         if (!$data['type_id']) {
             if ($data['type'] === 'sell') {
                 $query->whereIn('type_id', config('postType.sell'));
