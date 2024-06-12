@@ -46,7 +46,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
                 ->orWhere('post_view_histories.guest_id', $user_id);
         })
         ->where('post_view_histories.post_id', '!=', $latest)
-        ->orderBy('post_view_histories.created_at', 'desc')
+        ->orderBy('post_view_histories.viewed_at', 'desc')
         ->select('posts.*')
         ->get();
         return $posts;
@@ -55,7 +55,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     public function latestHistory($user_id)
     {
         $post = PostViewHistory::where('post_view_histories.user_id', $user_id)->orWhere('post_view_histories.guest_id', $user_id)
-        ->orderBy('post_view_histories.created_at', 'desc')->first();
+        ->orderBy('post_view_histories.viewed_at', 'desc')->first();
         return $post;
     }
 

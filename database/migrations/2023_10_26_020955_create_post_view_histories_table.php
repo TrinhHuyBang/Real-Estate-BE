@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('post_id');
             $table->foreign('post_id')->references('id')->on('posts');
-            $table->timestamps();
+            $table->dateTime('viewed_at'); // Thời điểm xem bài đăng
         });
     }
 

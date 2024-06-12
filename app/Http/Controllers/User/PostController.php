@@ -4,10 +4,10 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
-use App\Models\PostType;
 use App\Repos\PostImageRepo;
 use Illuminate\Http\Request;
 use App\Repos\PostRepo;
+use App\Repos\PostTypeRepo;
 use App\Repos\PostViewHistoryRepo;
 use App\Repos\ProjectRepo;
 use App\Repos\UserRepo;
@@ -26,15 +26,15 @@ class PostController extends Controller
     protected PostRepo $postRepo;
     protected PostImageRepo $postImageRepo;
     protected ProjectRepo $projectRepo;
-    protected UserRepo $userRepo;
+    protected PostTypeRepo $postTypeRepo;
     protected PostViewHistoryRepo $postViewHistoryRepo;
 
-    public function __construct(PostRepo $postRepo, PostImageRepo $postImageRepo, ProjectRepo $projectRepo, UserRepo $userRepo, PostViewHistoryRepo $postViewHistoryRepo)
+    public function __construct(PostRepo $postRepo, PostImageRepo $postImageRepo, ProjectRepo $projectRepo, PostTypeRepo $postTypeRepo, PostViewHistoryRepo $postViewHistoryRepo)
     {
         $this->postRepo = $postRepo;
         $this->postImageRepo = $postImageRepo;
         $this->projectRepo = $projectRepo;
-        $this->userRepo = $userRepo;
+        $this->postTypeRepo = $postTypeRepo;
         $this->postViewHistoryRepo = $postViewHistoryRepo;
     }
 
@@ -42,8 +42,8 @@ class PostController extends Controller
     {
         try {
             $postType = array();
-            $sells = PostType::select('type')->where('type', 'like', '%ban%')->get();
-            $rents = PostType::select('type')->where('type', 'like', '%thue%')->get();
+            $sells = $this->postTypeRepo->getByType('ban');
+            $rents = $this->postTypeRepo->getByType('thue');
             $postType['sell'] = [];
             $postType['rent'] = [];
             foreach ($sells as $sell) {
@@ -259,7 +259,7 @@ class PostController extends Controller
             ];
             $posts = $this->postRepo->listPost($data);
             $posts = PostResource::collection($posts)->values()->all();
-            $perPage = 4;
+            $perPage = 5;
             $currentPage = request('page', 1);
             $pagedResults = array_slice($posts, ($currentPage - 1) * $perPage, $perPage);
             $posts = new LengthAwarePaginator($pagedResults, count($posts), $perPage, $currentPage);

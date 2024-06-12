@@ -13,5 +13,8 @@ class PostViewHistory extends Model
         'user_id',
         'post_id',
         'guest_id',
+        'viewed_at',
     ];
+
+    public $timestamps = false;
 }

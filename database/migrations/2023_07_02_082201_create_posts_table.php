@@ -39,7 +39,6 @@ return new class extends Migration
             $table->tinyInteger('status');  // Trạng thái bài đăng, (đã duyệt 1, chờ duyệt 0, hết hạn 2, đã xoá 3, không duyệt 4)
             $table->dateTime('published_at')->nullable(); // Thời gian lúc bài đăng được duyệt
             $table->dateTime('expired_at')->nullable(); // Thời gian mà bài đăng hết hạn
-            $table->float('price_order', 8, 2); // giá theo đơn vị VND/m2 hoặc VND/Tháng
             $table->timestamps();
         });
     }

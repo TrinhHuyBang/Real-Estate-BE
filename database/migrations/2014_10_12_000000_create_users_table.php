@@ -23,9 +23,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->tinyInteger('role'); // Định danh tài khoản của người dùng (1: người dùng thường,
-                                        // 2: tài khoản doanh nghiệp, 3: nhà môi giới) 
-            $table->rememberToken();
-            $table->timestamps();
+                                        // 2: tài khoản doanh nghiệp, 3: nhà môi giới)
         });
     }
 

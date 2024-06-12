@@ -43,6 +43,13 @@ class PostRepo implements PostRepoInterface
         }
         return $post;
     }
+
+    public function getPost($id)
+    {
+        $post = Post::where('id', $id)->first();
+        return $post;
+    }
+
     public function create($data)
     {
         return Post::create($data);
@@ -178,9 +185,23 @@ class PostRepo implements PostRepoInterface
             ->update(['status' => config('status.expired')]);
     }
 
-    // Lấy ra danh sách các bài đăng đang chờ duyệt tức có status = 0 hay 'hiddenPost'
-    public function listRequest($postType, $orderBy, $orderWith)
+    // Lấy ra danh sách các bài đăng cho admin theo status
+    public function listByAdminWithStatus( $search, $status, $postType, $orderBy, $orderWith)
     {
-        return Post::whereIn('type_id', $postType)->where('status', config('status.hiddenPost'))->orderBY($orderWith, $orderBy)->get();
+        return Post::whereIn('type_id', $postType)
+            ->where('status', $status)
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('id', '=', $search);
+                })
+            ->orderBY($orderWith, $orderBy)->get();
+    }
+
+    public function countPost() {
+        return Post::whereIn('status', [config('status.displayPost'), config('status.expired')])->count();
+    }
+
+    public function countRequest() {
+        return Post::where('status', config('status.hiddenPost'))->count();
     }
 }

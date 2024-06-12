@@ -6,6 +6,7 @@ use App\Interfaces\EnterpriseRepoInterface;
 use App\Models\Enterprise;
 use App\Models\Project;
 use App\Models\SubField;
+use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
@@ -50,14 +51,17 @@ class EnterpriseRepo implements EnterpriseRepoInterface
     }
     public function edit($id, $data)
     {
+        $enterprise = Enterprise::where('id', $id)->first();
+        $enterprise->fill($data)->save();
+        return $enterprise;
     }
     public function delete($id)
     {
         return Enterprise::where('id', $id)->delete();
     }
 
-    public function listEnterprise($data) {
-        $query = Enterprise::select(['enterprises.id', 'address', 'name', 'abbreviation', 'logo', 'phone_number', 'address'])
+    public function listEnterprise($data, $fields = ['*']) {
+        $query = Enterprise::select($fields)
             ->leftJoin('sub_fields', 'sub_fields.enterprise_id', '=', 'enterprises.id')
             ->where('enterprises.status', 1)
             ->where('address', 'like', '%'.$data['district'].'%')
@@ -75,14 +79,50 @@ class EnterpriseRepo implements EnterpriseRepoInterface
         return $enterprises;
     }
 
+    public function listEnterpriseByAdmin($search, $status) {
+        Log::info($status);
+        $query = Enterprise::select(['enterprises.*', 'users.status as account_status'])
+            ->leftJoin('users', 'users.id', '=', 'enterprises.user_id')
+            ->where('enterprises.status', $status)
+            ->where('enterprises.name', 'like', '%'.$search.'%');
+        $enterprises = $query->paginate(10);
+        return $enterprises;
+    }
+
     public function getDetailByUserId($user_id) {
-        $enterprise_infor = Enterprise::select(['id', 'name', 'abbreviation', 'description', 'logo', 'phone_number', 'email', 'address', 'website', 'main_field'])->where('user_id', $user_id)->first();
-        $enterprise_infor->sub_field = SubField::select(['field_id'])->where('enterprise_id', $enterprise_infor->id)->get();
+        $enterprise_infor = Enterprise::where('user_id', $user_id)->first();
+        $enterprise_infor->sub_field = SubField::select(['field_id'])->where('enterprise_id', $enterprise_infor->id)->get()->pluck('field_id');
         return $enterprise_infor;
     }
 
     public function checkRegisteredByUserId($user_id) {
         $enterprise = Enterprise::where('user_id', $user_id)->where('status', 0)->first();
         return $enterprise ? true : false;
+    }
+
+    public function blockAccount($id) {
+        $enterprise = Enterprise::where('id', $id)->first();
+        $user = User::where('id', $enterprise->user_id)->first();
+        if($user->status == 1) {
+            $user->update(['status' => 0]);
+            return 'Khoá tài khoản thành công';
+        } else {
+            $user->update(['status' => 1]);
+            return 'Mở khoá tài khoản thành công';
+        }
+    }
+
+    public function countEnterprise() {
+        return Enterprise::where('status', 1)->count();
+    }
+
+    public function countRequest() {
+        return Enterprise::where('status', 0)->count();
+    }
+
+    public function updateByUserId($user_id, $data) {
+        $enterprise = Enterprise::where('user_id', $user_id)->first();
+        $enterprise->fill($data)->save();
+        return $enterprise;
     }
 }

@@ -28,4 +28,8 @@ class SubFieldRepo implements SubFieldRepoInterface
         return SubField::where('id', $id)->delete();
     }
 
+    public function deleteEnterpriseId($enterprise_id) {
+        return SubField::where('enterprise_id', $enterprise_id)->delete();
+    }
+
 }

@@ -42,7 +42,7 @@ class EnterpriseController extends Controller
                 'search' => $search,
                 'field' => $field
             ];
-            $enterprises = $this->enterpriseRepo->listEnterprise($data);
+            $enterprises = $this->enterpriseRepo->listEnterprise($data, ['enterprises.id', 'address', 'name', 'abbreviation', 'logo', 'phone_number', 'address']);
             return $this->handleSuccessJsonResponse($enterprises);
         } catch (Exception $e) {
             Log::info($e);

@@ -32,7 +32,7 @@ class ReviewController extends Controller
     {
         try {
             $avgRating = $this->reviewRepo->getAvgRating();
-            return $this->handleSuccessJsonResponse(['avgRating' => (float)number_format($avgRating, 1)]);
+            return $this->handleSuccessJsonResponse(['avgRating' => $avgRating, 1]);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);

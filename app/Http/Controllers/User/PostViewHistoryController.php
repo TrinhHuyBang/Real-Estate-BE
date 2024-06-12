@@ -48,19 +48,19 @@ class PostViewHistoryController extends Controller
                 }
                 $history = $this->postViewHistoryRepo->getByUserIdAndPostId($user_id, $post_id);
                 if($history) {
-                    $history = $this->postViewHistoryRepo->edit($history->id, ['updated_at' => Carbon::now()]);
+                    $history = $this->postViewHistoryRepo->edit($history->id, ['viewed_at' => Carbon::now()]);
                     return $this->handleSuccessJsonResponse($history);
                 } else {
-                    $new_history = $this->postViewHistoryRepo->create(['user_id'=>$user_id,'post_id'=>$post_id]);
+                    $new_history = $this->postViewHistoryRepo->create(['user_id'=>$user_id,'post_id'=>$post_id, 'viewed_at' => Carbon::now()]);
                 }
             } else {
                 $guest_id = $request->get('guest_id');
                 $history = $this->postViewHistoryRepo->getByGuestIdAndPostId($guest_id, $post_id);
                 if($history) {
-                    $history = $this->postViewHistoryRepo->edit($history->id);
+                    $history = $this->postViewHistoryRepo->edit($history->id, ['viewed_at' => Carbon::now()]);
                     return $this->handleSuccessJsonResponse($history);
                 } else {
-                    $new_history = $this->postViewHistoryRepo->create(['guest_id'=>$guest_id,'post_id'=>$post_id]);
+                    $new_history = $this->postViewHistoryRepo->create(['guest_id'=>$guest_id,'post_id'=>$post_id, 'viewed_at' => Carbon::now()]);
                 }
             }
             return $this->handleSuccessJsonResponse($new_history);

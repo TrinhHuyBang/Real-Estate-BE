@@ -21,7 +21,9 @@ class BrokerRepo implements BrokerRepoInterface
     {
         $broker = Broker::where('id', $id)->first();
         $broker->info = User::select(['name', 'phone', 'email', 'avatar'])->where('id', $broker->user_id)->first();
-        $broker->areas = BrokerageArea::select(['type_id', 'province', 'district'])->where('broker_id', $broker->id)->get();
+        $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
+        ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
+        ->where('broker_id', $broker->id)->get();
         $broker->count_posts = Post::where('user_id', $broker->user_id)->whereIn('status', [config('status.expired'), config('status.displayPost')])->count();
         $broker->number_consultations = BrokerAdviceRequest::where('broker_id', $broker->id)->whereIn('status', [BrokerAdviceRequestStatus::ACCEPTED, BrokerAdviceRequestStatus::DELETED])->count();
         $broker->rating = (float)number_format(BrokerReview::where('broker_id', $broker->id)
@@ -40,6 +42,9 @@ class BrokerRepo implements BrokerRepoInterface
     }
     public function edit($id, $data)
     {
+        $broker = Broker::where('id', $id)->first();
+        $broker->fill($data)->save();
+        return $broker;
     }
     public function delete($id)
     {
@@ -82,13 +87,17 @@ class BrokerRepo implements BrokerRepoInterface
 
     public function getDetailByUserId($user_id) {
         $broker_infor = Broker::select(['id', 'address', 'description', 'certificate_url'])->where('user_id', $user_id)->first();
-        $broker_infor->areas = BrokerageArea::select(['type_id', 'province', 'district'])->where('broker_id', $broker_infor->id)->get();
+        $broker_infor->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
+        ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
+        ->where('broker_id', $broker_infor->id)->get();
         return $broker_infor;
     }
 
     public function getBrokerDetail($broker) {
         $broker->info = User::select(['name', 'phone', 'email', 'avatar'])->where('id', $broker->user_id)->first();
-        $broker->areas = BrokerageArea::select(['type_id', 'province', 'district'])->where('broker_id', $broker->id)->get();
+        $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
+        ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
+        ->where('broker_id', $broker->id)->get();
         $broker->number_consultations = BrokerAdviceRequest::where('broker_id', $broker->id)->whereIn('status', [BrokerAdviceRequestStatus::ACCEPTED, BrokerAdviceRequestStatus::DELETED])->count();
         $broker->rating = (float)number_format(BrokerReview::where('broker_id', $broker->id)
         ->avg('broker_reviews.rating'), 1);
@@ -106,4 +115,45 @@ class BrokerRepo implements BrokerRepoInterface
         return $broker ? true : false;
     }
 
+    public function listBrokerForAdmin($data, $status)
+    {
+        $query = Broker::select(['brokers.*', 'users.name', 'users.email', 'users.phone', 'users.status as account_status'])
+            ->leftJoin('users', 'brokers.user_id', '=', 'users.id')
+            ->where('brokers.status', $status)
+            ->where(function ($query) use ($data){
+                if(Arr::get($data, 'search')) {
+                    $query->where('email', Arr::get($data, 'search'))
+                    ->orWhere('phone', Arr::get($data, 'search'));
+                } else {
+                    $query->where('email', 'like', '%' . Arr::get($data, 'search') . '%');
+                }
+            });
+        $brokers = $query->paginate(10);
+        foreach ($brokers as $broker) {
+            $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
+            ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
+            ->where('broker_id', $broker->id)->get();
+        }
+        return $brokers;
+    }
+
+    public function blockAccount($id) {
+        $broker = Broker::where('id', $id)->first();
+        $user = User::where('id', $broker->user_id)->first();
+        if($user->status == 1) {
+            $user->update(['status' => 0]);
+            return 'Khoá tài khoản thành công';
+        } else {
+            $user->update(['status' => 1]);
+            return 'Mở khoá tài khoản thành công';
+        }
+    }
+
+    public function countBroker() {
+        return Broker::where('status', 1)->count();
+    }
+
+    public function countRequest() {
+        return Broker::where('status', 0)->count();
+    }
 }

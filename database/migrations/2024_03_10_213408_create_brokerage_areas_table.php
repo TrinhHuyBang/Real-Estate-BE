@@ -23,7 +23,6 @@ return new class extends Migration
             $table->foreign('project_id')->references('id')->on('projects');
             $table->string('province');
             $table->string('district');
-            $table->timestamps();
         });
     }
 

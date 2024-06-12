@@ -1,12 +1,25 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminBrokerController;
+use App\Http\Controllers\Admin\AdminEnterpriseController;
+use App\Http\Controllers\Admin\AdminNewsController;
+use App\Http\Controllers\Admin\AdminPermissionController;
 use App\Http\Controllers\Admin\AdminPostController;
+use App\Http\Controllers\Admin\AdminProjectController;
+use App\Http\Controllers\Admin\AdminRoleController;
+use App\Http\Controllers\Admin\AdminSubAdminController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Enterprise\ProjectController;
 use App\Http\Controllers\User\AdviceRequestController;
 use App\Http\Controllers\User\Auth\AuthController as UserAuthController;
 use App\Http\Controllers\User\BookmarkController;
 use App\Http\Controllers\User\BrokerController;
+use App\Http\Controllers\User\EmailController;
 use App\Http\Controllers\User\EnterpriseController;
+use App\Http\Controllers\User\NewsController;
+use App\Http\Controllers\User\NotificationController;
 use App\Http\Controllers\User\PostController;
 use App\Http\Controllers\User\PostViewHistoryController;
 use App\Http\Controllers\User\ReviewController;
@@ -91,6 +104,12 @@ Route::group(['prefix' => 'review'], function () {
     Route::post('/create-update', [ReviewController::class, 'createOrUpdate']);
 });
 
+Route::group(['prefix' => 'news'], function () {
+    Route::get('/list-headline', [NewsController::class, 'listHeadline']);
+    Route::get('/list', [NewsController::class, 'list']);
+    Route::get('/detail/{id}', [NewsController::class, 'detail']);
+});
+
 Route::group(['middleware' => 'auth'], function () {
     Route::group(['prefix' => 'post'], function () {
         Route::post('/create', [PostController::class, 'create'])->name('createPost');
@@ -101,6 +120,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::group(['prefix' => 'bookmark'], function () {
         Route::post('/create', [BookmarkController::class, 'createOrDelete'])->name('bookmark');
         Route::get('/', [BookmarkController::class, 'listPost'])->name('listBookmark');
+    });
+    Route::group(['prefix' => 'notification'], function () {
+        Route::get('/', [NotificationController::class, 'list']);
+        Route::put('/mark-read/{id}', [NotificationController::class, 'markAsRead']);
+        Route::put('/mark-read-list', [NotificationController::class, 'markAsReadList']);
     });
     Route::group(['prefix' => 'advice-request'], function () {
         Route::get('/', [AdviceRequestController::class, 'getListRequest']);
@@ -118,12 +142,89 @@ Route::group(['middleware' => 'auth'], function () {
     });
 });
 
+Route::group(['prefix' => 'admin'], function () {
+    Route::post('/login', [AdminAuthController::class, 'login']);
+    
+        Route::group(['prefix' => 'auth'], function () {
+            Route::get('/profile', [AdminAuthController::class, 'profile']);
+            Route::put('/update-profile', [AdminAuthController::class, 'updateProfile']);
+            Route::put('/update-password', [AdminAuthController::class, 'updatePassword']);
+            Route::get('/logout', [AdminAuthController::class, 'logout']);
+        });
+        Route::group(['prefix' => 'post'], function () {
+            Route::get('/', [AdminPostController::class, 'getList']);
+            Route::get('/detail/{id}', [AdminPostController::class, 'get']);
+            Route::get('/list-request', [AdminPostController::class, 'getListRequest']);
+            Route::put('/reject-request/{id}', [AdminPostController::class, 'rejectRequest']);
+            Route::put('/accept-request/{id}', [AdminPostController::class, 'acceptRequest']);
+            Route::delete('/delete/{id}', [AdminPostController::class, 'delete']);
+        });
+
+        Route::group(['prefix' => 'project'], function () {
+            Route::get('/', [AdminProjectController::class, 'getList']);
+            Route::get('/detail/{id}', [AdminProjectController::class, 'get']);
+            Route::get('/list-request', [AdminProjectController::class, 'getListRequest']);
+            Route::put('/reject-request/{id}', [AdminProjectController::class, 'rejectRequest']);
+            Route::put('/accept-request/{id}', [AdminProjectController::class, 'acceptRequest']);
+            Route::delete('/delete/{id}', [AdminProjectController::class, 'delete']);
+        });
+
+        Route::group(['prefix' => 'subadmin'], function () {
+            Route::get('/list', [AdminSubAdminController::class, 'list']);
+            Route::put('/block/{id}', [AdminSubAdminController::class, 'blockAccount']);
+            Route::put('/update-role/{id}', [AdminSubAdminController::class, 'updateRole']);
+            Route::post('/create-account', [AdminSubAdminController::class, 'createSubAdmin']);
+        });
+
+        Route::group(['prefix' => 'user'], function () {
+            Route::get('/list', [AdminUserController::class, 'list']);
+            Route::put('/block/{id}', [AdminUserController::class, 'blockAccount']);
+        });
+
+        Route::group(['prefix' => 'enterprise'], function () {
+            Route::get('/list', [AdminEnterpriseController::class, 'list']);
+            Route::put('/block/{id}', [AdminEnterpriseController::class, 'blockAccount']);
+            Route::put('/reject-request/{id}', [AdminEnterpriseController::class, 'rejectRequest']);
+            Route::put('/accept-request/{id}', [AdminEnterpriseController::class, 'acceptRequest']);
+        });
+
+        Route::group(['prefix' => 'broker'], function () {
+            Route::get('/list', [AdminBrokerController::class, 'list']);
+            Route::put('/block/{id}', [AdminBrokerController::class, 'blockAccount']);
+            Route::put('/reject-request/{id}', [AdminBrokerController::class, 'rejectRequest']);
+            Route::put('/accept-request/{id}', [AdminBrokerController::class, 'acceptRequest']);
+        });
+
+        Route::group(['prefix' => 'news'], function () {
+            Route::get('/list', [AdminNewsController::class, 'list']);
+            Route::get('/detail/{id}', [AdminNewsController::class, 'detail']);
+            Route::post('/create', [AdminNewsController::class, 'create']);
+            Route::put('/update/{id}', [AdminNewsController::class, 'update']);
+            Route::delete('/delete/{id}', [AdminNewsController::class, 'delete']);
+        });
+
+        Route::group(['prefix' => 'role'], function () {
+            Route::get('/', [AdminRoleController::class, 'getList']);
+            Route::get('/list-option', [AdminRoleController::class, 'listOption']);
+            Route::delete('/delete/{id}', [AdminRoleController::class, 'delete']);
+            Route::post('/create', [AdminRoleController::class, 'create']);
+            Route::put('/update/{id}', [AdminRoleController::class, 'update']);
+        });
+
+        Route::group(['prefix' => 'permission'], function () {
+            Route::get('/', [AdminPermissionController::class, 'getList']);
+        });
+
+        Route::group(['prefix' => 'dashboard'], function () {
+            Route::get('/overview', [DashboardController::class, 'overview']);
+            Route::get('/list-review', [DashboardController::class, 'listReview']);
+        });
+});
+
+Route::post('/send-email', [EmailController::class, 'sendContactEmail']);
+
 Route::get('/post', [PostController::class, 'getList']);
 Route::post('/suggested-post-filter', [PostController::class, 'suggestedPostByFilter']);
-
-Route::get('/list-request', [AdminPostController::class, 'getListRequest']);
-Route::put('/reject-request/{id}', [AdminPostController::class, 'rejectRequest']);
-Route::put('/accept-request/{id}', [AdminPostController::class, 'acceptRequest']);
 
 
 

@@ -47,6 +47,9 @@ class SendEmail extends Mailable
             case '-2':
                 $view = 'emails.forgotPassword';
                 break;
+            case '1':
+                $view = 'emails.contactEmail';
+                break;
             default:
                 $view = 'emails.verifyEmail';
                 break;

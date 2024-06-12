@@ -11,11 +11,11 @@ trait OrderByKey
         switch ($order) {
             case 'Giá thấp đến cao':
                 $orderBy = 'asc';
-                $orderWith = 'price_order';
+                $orderWith = 'price';
                 break;
             case 'Giá cao đến thấp':
                 $orderBy = 'desc';
-                $orderWith = 'price_order';
+                $orderWith = 'price';
                 break;
             case 'Diện tích lớn đến bé':
                 $orderBy = 'desc';

@@ -1,6 +1,7 @@
 <?php
 namespace App\Repos;
 
+use App\Enums\UserRole;
 use App\Interfaces\UserRepoInterface;
 use App\Models\Bookmark;
 use App\Models\Post;
@@ -54,5 +55,39 @@ class UserRepo implements UserRepoInterface
         $user->expired_count = $expired_count;
         $user->all_count = $all_count;
         return $user;
+    }
+
+    public function list($search = '') {
+        $users = User::select(['id','name', 'email', 'phone', 'avatar', 'status', 'email_verified_at'])
+        ->where('role', UserRole::USER)
+        ->where(function ($query) use ($search){
+            if($search) {
+                $query->where('email', $search)
+                ->orWhere('phone', $search);
+            } else {
+                $query->where('email', 'like', '%' . $search . '%');
+            }
+        })
+        ->paginate(10);
+        return $users;
+    }
+
+    public function blockAccount($id) {
+        $admin = User::where('id', $id)->first();
+        if($admin->status == 1) {
+            $admin->update(['status' => 0]);
+            return 'Khoá tài khoản thành công';
+        } else {
+            $admin->update(['status' => 1]);
+            return 'Mở khoá tài khoản thành công';
+        }
+    }
+
+    public function countUser() {
+        return User::where('role', UserRole::USER)->count();
+    }
+
+    public function countActive() {
+        return User::where('status', 1)->where('role', UserRole::USER)->count();
     }
 }

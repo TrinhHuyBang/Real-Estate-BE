@@ -2,6 +2,8 @@
 
 namespace App\Events\Notify;
 
+use App\Enums\NotificationType;
+use App\Traits\Notification;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -9,10 +11,14 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Arr;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class PostNotifyEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Notification;
 
     public mixed $data;
 
@@ -33,16 +39,17 @@ class PostNotifyEvent implements ShouldBroadcast
      */
     public function broadcastOn(): Channel
     {
-        return new Channel('postNotification');
+        return new Channel('notification');
     }
 
     public function broadcastAs(): string
     {
-        return 'posts';
+        return 'notice';
     }
 
     public function broadcastWith(): array
     {
-        return ["message" => 'kshjahashj', 'user_id' => $this->data['user_id']];
+        $message = $this->getMessageForNotify($this->data);
+        return ["message" => $message, 'user_id' => Arr::get($this->data, 'user_id')];
     }
 }

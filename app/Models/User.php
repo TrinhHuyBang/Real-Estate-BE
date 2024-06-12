@@ -33,6 +33,8 @@ class User extends Authenticatable implements JWTSubject
         'role' => 1,
     ];
 
+    public $timestamps = false;
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -40,7 +42,6 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**

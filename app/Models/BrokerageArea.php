@@ -16,4 +16,6 @@ class BrokerageArea extends Model
         'province',
         'district'
     ];
+
+    public $timestamps = false;
 }

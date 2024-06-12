@@ -18,10 +18,10 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->tinyInteger('type');
-            $table->tinyInteger('status');
-            $table->unsignedBigInteger('post_project_id');
+            $table->unsignedBigInteger('post_project_id')->nullable();
             $table->tinyInteger('action');
             $table->text('note')->nullable();
+            $table->boolean('status')->default(false); // false : chưa đọc, true : đã đọc
             $table->timestamps();
         });
     }

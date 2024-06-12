@@ -16,6 +16,7 @@ use App\Mail\SendEmail;
 use App\Repos\BrokerageAreaRepo;
 use App\Repos\BrokerRepo;
 use App\Repos\EnterpriseRepo;
+use App\Repos\NotificationRepo;
 use App\Repos\PasswordResetRepo;
 use App\Repos\SubFieldRepo;
 use App\Repos\VerifyEmailTokenRepo;
@@ -32,6 +33,7 @@ class AuthController extends Controller
     protected SubFieldRepo $subFieldRepo;
     protected BrokerRepo $brokerRepo;
     protected BrokerageAreaRepo $brokerageAreaRepo;
+    protected NotificationRepo $notificationRepo;
     /**
      * Create a new AuthController instance.
      *
@@ -44,7 +46,8 @@ class AuthController extends Controller
         EnterpriseRepo $enterpriseRepo,
         SubFieldRepo $subFieldRepo,
         BrokerRepo $brokerRepo,
-        BrokerageAreaRepo $brokerageAreaRepo)
+        BrokerageAreaRepo $brokerageAreaRepo,
+        NotificationRepo $notificationRepo)
     {
         $this->middleware('auth:api', ['except' => ['login', 'register', 'unauth', 'resetPassword', 'forgetPassword', 'verifyEmail']]);
         $this->userRepo = $userRepo;
@@ -54,6 +57,7 @@ class AuthController extends Controller
         $this->subFieldRepo = $subFieldRepo;
         $this->brokerRepo = $brokerRepo;
         $this->brokerageAreaRepo = $brokerageAreaRepo;
+        $this->notificationRepo = $notificationRepo;
     }
 
     /**
@@ -120,7 +124,7 @@ class AuthController extends Controller
 
         $data = [
             'from_email' => config('app.mail_from_address'),
-            'subject' => 'Verify email',
+            'subject' => 'Yêu cầu xác thực email',
             'user_name' => $user_name,
             'to_email' => $email,
             'type' => -1,
@@ -218,7 +222,7 @@ class AuthController extends Controller
             $data = [
                 'from_email' => config('app.mail_from_address'),
                 'type' => -2,
-                'subject' => 'Password reset',
+                'subject' => 'Yêu cầu đặt lại mật khẩu',
                 'to_email' => $email,
                 'redirect_url' => 'http://localhost:8080/thay-doi-mat-khau/' . $token,
             ];
@@ -274,6 +278,7 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $user->bookmark = $this->userRepo->getNumberBookmark($user->id);
+        $user->notification = $this->notificationRepo->getCountUnreadByUser($user->id);
         if($user->role == UserRole::BROKER) {
             $user->broker_infor = $this->brokerRepo->getDetailByUserId($user->id);
         }
@@ -331,6 +336,16 @@ class AuthController extends Controller
                     if(!$brokerageArea) {
                         throw new Exception('Cập khu vực và loại môi giới không thành công');
                     }
+                }
+            }
+
+            if($user->role == UserRole::ENTERPRISE) {
+                $enterprise_infor = $request->get('enterprise_infor');
+                $enterprise = $this->enterpriseRepo->updateByUserId($user->id, $enterprise_infor);
+                $sub_fields = Arr::get($request, 'sub_field') ? Arr::get($request, 'sub_field') : [];
+                $this->subFieldRepo->deleteEnterpriseId($enterprise->id);
+                foreach ($sub_fields as $sub_field) {
+                    $this->subFieldRepo->create(['field_id' => $sub_field, 'enterprise_id' => $enterprise->id]);
                 }
             }
             return $this->handleSuccessJsonResponse($info);

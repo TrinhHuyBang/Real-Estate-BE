@@ -57,7 +57,11 @@ class ProjectRepo implements ProjectRepoInterface
     }
     public function delete($id)
     {
-
+        $project = Project::where('id', $id)->first();
+        if($project) {
+            $project->update(['status' => config('status.project.deleted')]);
+        }
+        return $project;
     }
 
     // Lấy danh sách dự án theo các tiêu chí lọc của người dùng
@@ -139,5 +143,35 @@ class ProjectRepo implements ProjectRepoInterface
         return $projects;
     }
 
-    
+    public function countProject() {
+        return Project::where('status', config('status.project.display'))->count();
+    }
+
+    public function countRequest() {
+        return Project::where('status', config('status.project.hidden'))->count();
+    }
+
+    public function listByStatus($search, $status) {
+        $query = Project::select(['projects.*', 'project_images.url as image'])
+        ->where('status', $status)
+        ->join('project_images', function ($join) {
+            $join->on('projects.id', '=', 'project_images.project_id')
+                ->whereRaw('project_images.id = (select id from project_images where project_id = projects.id limit 1)');
+        })
+        ->where(function ($query) use ($search) {
+            $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('projects.id', '=', $search);
+            });
+        $projects = $query->paginate(10);
+        return $projects;
+    }
+
+    // lấy thông tin của dự án và tài khoản người dùng
+    public function getInforById($id) {
+        $project = Project::select(['projects.id', 'enterprises.user_id', 'projects.name'])
+            ->where('projects.id', $id)
+            ->leftJoin('enterprises', 'projects.enterprise_id', '=', 'enterprises.id')
+            ->first();
+        return $project; 
+    }
 }

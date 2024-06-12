@@ -28,10 +28,17 @@ class ReviewRepo implements ReviewRepoInterface
 
     }
 
+    public function list() {
+        $reviews = Review::select(['users.name', 'users.avatar', 'users.id', 'review', 'rating', 'reviews.created_at'])
+        ->leftJoin('users', 'users.id', '=', 'reviews.user_id')
+        ->paginate(10);
+        return $reviews;
+    }
+
     public function getAvgRating()
     {
         $avgRating = Review::avg('rating');
-        return $avgRating;
+        return (float)number_format($avgRating, 1);
     }
 
     public function createOrUpdate($data)
@@ -45,5 +52,9 @@ class ReviewRepo implements ReviewRepoInterface
             $review->fill($data)->save();
             return $review;
         }
+    }
+
+    public function countReview() {
+        return Review::count();
     }
 }

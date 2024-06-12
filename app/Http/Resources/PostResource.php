@@ -50,6 +50,7 @@ class PostResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'address' => $this->address,
         ];
         return array_merge($fields, [
             'image' => $image,
