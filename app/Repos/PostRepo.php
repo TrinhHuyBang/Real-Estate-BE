@@ -114,17 +114,6 @@ class PostRepo implements PostRepoInterface
         return $posts;
     }
 
-    public function listByDistricAndType($district, $type, $id = null)
-    {
-        $posts = Post::whereNot('id', $id)->where('status', config('status.displayPost'))->where('district', $district)->where('type_id', $type)->get();
-        if (count($posts)) {
-            return $posts;
-        } else {
-            $posts = Post::whereNot('id', $id)->where('status', config('status.displayPost'))->orderByDesc('id')->get();
-            return $posts;
-        }
-    }
-
     // Lấy danh sách các bài đăng dựa vào loại tin đăng ( Thuê/ bán) và trạng thái của bài đăng đó
     public function listByStatus($status, $postType, $search = '')
     {
