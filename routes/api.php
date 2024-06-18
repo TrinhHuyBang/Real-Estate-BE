@@ -223,9 +223,6 @@ Route::group(['prefix' => 'admin'], function () {
 
 Route::post('/send-email', [EmailController::class, 'sendContactEmail']);
 
-Route::get('/post', [PostController::class, 'getList']);
-Route::post('/suggested-post-filter', [PostController::class, 'suggestedPostByFilter']);
-
 
 
 

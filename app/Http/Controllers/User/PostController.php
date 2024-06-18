@@ -7,10 +7,7 @@ use App\Http\Resources\PostResource;
 use App\Repos\PostImageRepo;
 use Illuminate\Http\Request;
 use App\Repos\PostRepo;
-use App\Repos\PostTypeRepo;
 use App\Repos\PostViewHistoryRepo;
-use App\Repos\ProjectRepo;
-use App\Repos\UserRepo;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Traits\HandleJsonResponse;
@@ -25,73 +22,14 @@ class PostController extends Controller
 
     protected PostRepo $postRepo;
     protected PostImageRepo $postImageRepo;
-    protected ProjectRepo $projectRepo;
-    protected PostTypeRepo $postTypeRepo;
     protected PostViewHistoryRepo $postViewHistoryRepo;
 
-    public function __construct(PostRepo $postRepo, PostImageRepo $postImageRepo, ProjectRepo $projectRepo, PostTypeRepo $postTypeRepo, PostViewHistoryRepo $postViewHistoryRepo)
+    public function __construct(PostRepo $postRepo, PostImageRepo $postImageRepo, PostViewHistoryRepo $postViewHistoryRepo)
     {
         $this->postRepo = $postRepo;
         $this->postImageRepo = $postImageRepo;
-        $this->projectRepo = $projectRepo;
-        $this->postTypeRepo = $postTypeRepo;
         $this->postViewHistoryRepo = $postViewHistoryRepo;
     }
-
-    public function getPostTypes()
-    {
-        try {
-            $postType = array();
-            $sells = $this->postTypeRepo->getByType('ban');
-            $rents = $this->postTypeRepo->getByType('thue');
-            $postType['sell'] = [];
-            $postType['rent'] = [];
-            foreach ($sells as $sell) {
-                array_push($postType['sell'], $sell->type);
-            }
-            foreach ($rents as $rent) {
-                array_push($postType['rent'], $rent->type);
-            }
-            return $this->handleSuccessJsonResponse($postType);
-        } catch (Exception $e) {
-            return $this->handleExceptionJsonResponse($e);
-        }
-    }
-
-    /**
-     * Lấy danh sách tin rao bán
-     * GET /
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    // public function getSellPost(Request $request)
-    // {
-    //     try {
-    //         $data = $request->all();
-    //         Log::info($data);
-    //         $order = $request->get('order_by');
-    //         $orderKey = $this->getOrderByKey($order);
-    //         $data->order_by = $orderKey['order_by'];
-    //         $data->order_with = $orderKey['order_with'];
-    //         if ($data->endPrice) {
-    //             $data->endPrice = 9999999999;
-    //         }
-    //         if ($data->endPrice) {
-    //             $data->endPrice = 0;
-    //         }
-    //         if ($data->endSize) {
-    //             $data->endSize = 9999999999;
-    //         }
-    //         if ($data->startSize) {
-    //             $data->startSize = 0;
-    //         }
-    //         $posts = $this->postRepo->listPost($data);
-    //         return $this->handleSuccessJsonResponse($posts);
-    //     } catch (Exception $e) {
-    //         return $this->handleExceptionJsonResponse($e);
-    //     }
-    // }
 
     /**
      * Lấy thông tin chi tiết một bài đăng
@@ -205,8 +143,8 @@ class PostController extends Controller
     public function delete($id)
     {
         try {
-            $post = $this->postRepo->delete($id);
-            return $this->handleSuccessJsonResponse($post);
+            $this->postRepo->delete($id);
+            return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);
         }
@@ -268,92 +206,6 @@ class PostController extends Controller
             Log::info($e);
             return $this->handleExceptionJsonResponse($e);
         }
-    }
-
-    public function suggestedPost($data) {
-        $posts = $this->postRepo->listByDistricAndType($data->district, $data->type_id, $data->id);
-        $ward = $data->ward;
-        $size = $data->size;
-        $price = $data->price;
-        $unit = $data->unit;
-        $bedroom = $data->bedroom;
-        $floor = $data->floor;
-        $toilet = $data->toilet;
-        foreach ($posts as $post) {
-            if($post->ward === $ward) {
-                $point = 1;
-            } else {
-                $point = 0;
-            }
-
-            if(abs($post->size - $size) <= 1/5*$size) {
-                $size_avg = 1 - 5*abs($post->size - $size)/$size;
-            } else {
-                $size_avg = 0;
-            }
-
-            if($unit === 'Thỏa Thuận') {
-                $price_avg = 1;
-            } else if($unit === "VND") {
-                if($post->unit === 'Thỏa Thuận') {
-                    $price_avg = 1;
-                } else if($post->unit === 'VND') {
-                    if(abs($post->price - $price) <= 1/5*$price) {
-                        $price_avg = 1 - 5*abs($post->price - $price)/$price;
-                    } else {
-                        $price_avg = 0;
-                    }
-                } else {
-                    if(abs($post->price*$post->size - $price) <= 1/5*$price) {
-                        $price_avg = 1 - 5*abs($post->price*$post->size - $price)/$price;
-                    } else {
-                        $price_avg = 0;
-                    }
-                }
-            } else {
-                if($post->unit === 'Thỏa Thuận') {
-                    $price_avg = 1;
-                } else if($post->unit === 'VND/m2') {
-                    if(abs($post->price - $price) <= 1/5*$price) {
-                        $price_avg = 1 - 5*abs($post->price - $price)/$price;
-                    } else {
-                        $price_avg = 0;
-                    }
-                } else {
-                    if(abs($post->price/$post->size - $price) <= 1/5*$price) {
-                        $price_avg = 1 - 5*abs($post->price/$post->size - $price)/$price;
-                    } else {
-                        $price_avg = 0;
-                    }
-                }
-            }
-
-            if($bedroom) {
-                $bedroom_avg = 1 - abs($post->bedroom - $bedroom)/$bedroom;
-            } else {
-                $bedroom_avg = 1;
-            }
-
-            if($floor) {
-                $floor_avg = 1 - abs($post->floor - $floor)/$floor;
-            } else {
-                $floor_avg = 1;
-            }
-
-            if($toilet) {
-                $toilet_avg = 1 - abs($post->toilet - $toilet)/$toilet;
-            } else {
-                $toilet_avg = 1;
-            }
-            $point_avg = $point + ($size_avg*2 + $price_avg*2 + $toilet_avg + $floor_avg + $bedroom_avg)/7;
-            $post['point_avg'] = $point_avg;
-        }
-        $suggestedPosts = PostResource::collection($posts)->sortByDesc('point_avg')->values()->all();
-        $perPage = 4;
-        $currentPage = request('page', 1);
-        $pagedResults = array_slice($suggestedPosts, ($currentPage - 1) * $perPage, $perPage);
-        $suggestedPosts = new LengthAwarePaginator($pagedResults, count($suggestedPosts), $perPage, $currentPage);
-        return $suggestedPosts;
     }
 
     public function suggestedPostByHistory(Request $request)
@@ -423,7 +275,6 @@ class PostController extends Controller
                 }
 
                 foreach($topSizes as $type_id => $topSize) {
-                    $size_interval = config("levelSize.$type_id");
                     if($suggestPost->type_id == $type_id){
                         foreach ($topSize as $size) {
                             if($post_size_level == $size['size_level']) {
@@ -444,16 +295,6 @@ class PostController extends Controller
             return $this->handleSuccessJsonResponse($suggestedPosts);
         } catch (Exception $e) {
             Log::info($e);
-            return $this->handleExceptionJsonResponse($e);
-        }
-    }
-
-    public function suggestedPostByFilter(Request $request)
-    {
-        try {
-            $suggestedPosts = $this->suggestedPost($request);
-            return $this->handleSuccessJsonResponse($suggestedPosts);
-        } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -495,7 +336,6 @@ class PostController extends Controller
 
     public function listUserPost(Request $request) {
         try {
-            $search = $request->get('search');
             $user_id = $request->get('user_id');
             $type = $request->get('type');
             $postType = config("postType.$type");
