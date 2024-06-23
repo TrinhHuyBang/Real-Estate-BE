@@ -50,6 +50,7 @@ class PostNotifyEvent implements ShouldBroadcast
     public function broadcastWith(): array
     {
         $message = $this->getMessageForNotify($this->data);
+        Log::info($message);
         return ["message" => $message, 'user_id' => Arr::get($this->data, 'user_id')];
     }
 }

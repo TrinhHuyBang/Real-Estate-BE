@@ -157,8 +157,6 @@ class AuthController extends Controller
             if ($user->email_verified_at) {
                 return redirect()->route('verifyFail');
             }
-            // Cập nhật thời gian verify email
-            Log::info(Carbon::now());
             $user = $this->userRepo->edit($user->id, ['email_verified_at' => Carbon::now()]);
             return redirect()->route('verifySuccess');
         } catch (Exception $e) {
