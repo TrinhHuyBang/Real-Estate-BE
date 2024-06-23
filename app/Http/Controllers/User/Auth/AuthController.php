@@ -144,7 +144,6 @@ class AuthController extends Controller
             $email = $request->get('email');
             // Kiểm tra email và token có khớp nhau không
             $check_token = $this->verifyEmailTokenRepo->getByEmailAndToken($email, $token);
-            Log::info($check_token);
             if (!$check_token) {
                 throw new Exception("Token không hợp lệ");
             }
@@ -159,8 +158,8 @@ class AuthController extends Controller
                 return redirect()->route('verifyFail');
             }
             // Cập nhật thời gian verify email
+            Log::info(Carbon::now());
             $user = $this->userRepo->edit($user->id, ['email_verified_at' => Carbon::now()]);
-            Log::info('user infor : ' . $user);
             return redirect()->route('verifySuccess');
         } catch (Exception $e) {
             Log::error($e);
