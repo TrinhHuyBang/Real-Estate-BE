@@ -6,7 +6,7 @@
     <title>Xác thực thành công</title>
     <script>
         setTimeout(function() {
-            window.location.href = 'http://localhost:8080/dang-nhap';
+            window.location.href = 'http://103.195.238.178/dang-nhap';
         }, 3000);
     </script>
 </head>
