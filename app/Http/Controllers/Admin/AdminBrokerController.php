@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\BrokerRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Repos\BrokerRepo;
@@ -108,7 +109,8 @@ class AdminBrokerController extends Controller
     {
         try {
             if(Gate::forUser(auth('admin')->user())->allows('update-user')) {
-                $this->brokerRepo->edit($id, ['status' => BrokerRequestStatus::ACCEPTED]);
+                $broker = $this->brokerRepo->edit($id, ['status' => BrokerRequestStatus::ACCEPTED]);
+                $this->userRepo->edit($broker->user_id, ['role' => UserRole::BROKER]);
                 return $this->handleSuccessJsonResponse();
             } else {
                 throw new Exception("Bạn không có quyền để thực hiện hành động này", 403);

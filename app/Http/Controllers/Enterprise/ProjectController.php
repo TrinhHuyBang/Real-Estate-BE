@@ -40,8 +40,6 @@ class ProjectController extends Controller
         $enterprise = $this->enterpriseRepo->getDetailByUserId($user_id);
         $project['enterprise_id'] = $enterprise->id;
         $project_image = $request->get('images');
-        Log::info('Project' . json_encode($project));
-        Log::info('image' . json_encode($project_image));
         try {
             $new_project = $this->projectRepo->create($project);
             if (!$new_project) {
@@ -55,7 +53,7 @@ class ProjectController extends Controller
             }
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::info($e->getMessage());
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -75,7 +73,6 @@ class ProjectController extends Controller
             // Status : trạng thái của bài đăng về dự án
             $user_id = auth()->user()->id;
             $enterprise = $this->enterpriseRepo->getDetailByUserId($user_id);
-            Log::info($enterprise->id);
             $search = $request->get('search');
             $project_status = $request->get('project_status');
             $project_status = $project_status ? $project_status : ProjectStatus::ALL;
@@ -88,6 +85,58 @@ class ProjectController extends Controller
             }
             return $this->handleSuccessJsonResponse($projects);
         } catch (Exception $e) {
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+    /**
+     * Cập nhật thông tin dự án
+     * Put /
+     *
+     * @param Int $id
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function update($id, Request $request)
+    {
+        $project = $request->except(['images', 'id', 'investor', 'updated_at', 'created_at', 'status']);
+        $project_image = $request->get('images');
+        try {
+            $project = $this->projectRepo->edit($id, $project);
+            if (!$project) {
+                throw new Exception('Không có dự án');
+            }
+            $this->projectImageRepo->delete($id);
+            foreach ($project_image as $project_image) {
+                $image = $this->projectImageRepo->create(['url' => $project_image, 'project_id' => $id]);
+                if (!$image) {
+                    throw new Exception('Thêm ảnh không thành công');
+                }
+            }
+            return $this->handleSuccessJsonResponse();
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+    /**
+     * Xóa dự án
+     * Delete /
+     *
+     * @param Int $id
+     * @return JsonResponse
+     */
+    public function delete($id)
+    {
+        try {
+            $project = $this->projectRepo->delete($id);
+            if (!$project) {
+                throw new Exception('Không có dự án');
+            }
+            return $this->handleSuccessJsonResponse();
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

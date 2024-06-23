@@ -65,7 +65,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
             $query->where('post_view_histories.user_id', $user_id)
                 ->orWhere('post_view_histories.guest_id', $user_id);
         })
-        ->get();
+        ->get()->pluck('post_id');
         return $posts;
     }
 

@@ -20,6 +20,8 @@ class Admin extends Authenticatable implements JWTSubject
         'role',
     ];
 
+    public $timestamps = false;
+
     protected $attributes = [
         'avatar' => null,
         'status' => true,

@@ -411,17 +411,37 @@ class AuthController extends Controller
         }
     }
 
+    public function getDetailBrokerRegistration()
+    {
+        try {
+            $broker = $this->brokerRepo->getDetailRegistration(auth()->user()->id);
+            return $this->handleSuccessJsonResponse($broker);
+        } catch (Exception $e) {
+            Log::error($e);
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
     public function brokerRegister(Request $request)
     {
         try {
-            $data = $request->except('brokerageAreas');
+            $is_update = $request->get('isUpdate');
+            $user_id  = auth()->user()->id;
+            $data = $request->except(['brokerageAreas', 'isUpdate']);
             $brokerageAreas = $request->get('brokerageAreas');
-            $data['user_id'] = auth()->user()->id;
-            Log::info('Area : '. json_encode($brokerageAreas));
-            Log::info('Data : ' . json_encode($data));
-            $broker = $this->brokerRepo->create($data);
-            if(!$broker) {
-                throw new Exception('Thêm yêu cầu không thành công');
+            $data['user_id'] = $user_id;
+            if($is_update) {
+                $broker = $this->brokerRepo->createOrUpdate($user_id, $data);
+                $this->brokerageAreaRepo->delete($broker->id);
+            } else {
+                $isRegister = $this->brokerRepo->checkRegisteredByUserId($user_id);
+                if($isRegister) {
+                    throw new Exception('Không thể đăng ký vì bạn đang có yêu cầu đăng ký chờ duyệt');
+                }
+                $broker = $this->brokerRepo->create($data);
+                if(!$broker) {
+                    throw new Exception('Thêm yêu cầu không thành công');
+                }
             }
             foreach ($brokerageAreas as $brokerageArea) {
                 $brokerageArea['broker_id'] = $broker->id;

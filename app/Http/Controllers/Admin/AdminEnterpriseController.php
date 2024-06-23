@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\EnterpriseRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Repos\EnterpriseRepo;
@@ -106,7 +107,8 @@ class AdminEnterpriseController extends Controller
     {
         try {
             if(Gate::forUser(auth('admin')->user())->allows('update-user')) {
-                $this->enterpriseRepo->edit($id, ['status' => EnterpriseRequestStatus::ACCEPTED]);
+                $enterprise = $this->enterpriseRepo->edit($id, ['status' => EnterpriseRequestStatus::ACCEPTED]);
+                $this->userRepo->edit($enterprise->user_id, ['role' => UserRole::ENTERPRISE]);
                 return $this->handleSuccessJsonResponse();
             } else {
                 throw new Exception("Bạn không có quyền để thực hiện hành động này", 403);

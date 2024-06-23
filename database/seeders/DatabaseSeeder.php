@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(PostSeeder::class);
         $this->call(PostImageSeeder::class);
+        $this->call(PermissionSeeder::class);
+        $this->call(AdminSeeder::class);
         // \App\Models\User::factory(10)->create();
     }
 }

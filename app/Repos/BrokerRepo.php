@@ -2,7 +2,9 @@
 namespace App\Repos;
 
 use App\Enums\BrokerAdviceRequestStatus;
+use App\Enums\BrokerRequestStatus;
 use App\Interfaces\BrokerRepoInterface;
+use App\Models\AdviceRequest;
 use App\Models\Broker;
 use App\Models\BrokerAdviceRequest;
 use App\Models\BrokerageArea;
@@ -34,6 +36,17 @@ class BrokerRepo implements BrokerRepoInterface
         ->get();
         return $broker;
     }
+    public function createOrUpdate($user_id, $data) {
+        $broker = Broker::where('user_id', $user_id)->where('status', BrokerRequestStatus::APPLIED)->first();
+        if($broker) {
+            $broker->fill($data)->save();
+        } else {
+            $broker = new Broker();
+            $broker->fill($data)->save();
+        }
+        return $broker;
+    }
+
     public function create($data)
     {
         $broker = new Broker();
@@ -80,6 +93,15 @@ class BrokerRepo implements BrokerRepoInterface
         return $brokers;
     }
 
+    public function getDetailRegistration($user_id)
+    {
+        $broker = Broker::where('user_id', $user_id)->where('status', BrokerRequestStatus::APPLIED)->first();
+        $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
+        ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
+        ->where('broker_id', $broker->id)->get();
+        return $broker;
+    }
+
     public function getByUserId($userId) {
         $broker = Broker::select(['id'])->where('user_id', $userId)->first();
         return $broker;
@@ -93,11 +115,15 @@ class BrokerRepo implements BrokerRepoInterface
         return $broker_infor;
     }
 
-    public function getBrokerDetail($broker) {
+    public function getBrokerDetail($broker, $broker_request_id = null) {
         $broker->info = User::select(['name', 'phone', 'email', 'avatar'])->where('id', $broker->user_id)->first();
         $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
         ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
         ->where('broker_id', $broker->id)->get();
+        if($broker_request_id) {
+            $isRating = BrokerReview::where('broker_request_id', $broker_request_id)->first();
+            $broker->isRating = $isRating ? $isRating->rating : 0;
+        }
         $broker->number_consultations = BrokerAdviceRequest::where('broker_id', $broker->id)->whereIn('status', [BrokerAdviceRequestStatus::ACCEPTED, BrokerAdviceRequestStatus::DELETED])->count();
         $broker->rating = (float)number_format(BrokerReview::where('broker_id', $broker->id)
         ->avg('broker_reviews.rating'), 1);
@@ -111,13 +137,13 @@ class BrokerRepo implements BrokerRepoInterface
     }
 
     public function checkRegisteredByUserId($user_id) {
-        $broker = Broker::where('user_id', $user_id)->where('status', 0)->first();
+        $broker = Broker::where('user_id', $user_id)->where('status', BrokerRequestStatus::APPLIED)->first();
         return $broker ? true : false;
     }
 
     public function listBrokerForAdmin($data, $status)
     {
-        $query = Broker::select(['brokers.*', 'users.name', 'users.email', 'users.phone', 'users.status as account_status'])
+        $query = Broker::select(['brokers.*', 'users.avatar', 'users.name', 'users.email', 'users.phone', 'users.status as account_status'])
             ->leftJoin('users', 'brokers.user_id', '=', 'users.id')
             ->where('brokers.status', $status)
             ->where(function ($query) use ($data){
@@ -135,6 +161,29 @@ class BrokerRepo implements BrokerRepoInterface
             ->where('broker_id', $broker->id)->get();
         }
         return $brokers;
+    }
+
+    public function listReview($broker_id) {
+        $reviews = BrokerReview::select([
+                'users.name',
+                'users.avatar',
+                'users.id as user_id',
+                'broker_reviews.broker_request_id',
+                'broker_reviews.review',
+                'broker_reviews.rating',
+                'broker_reviews.created_at'
+            ])
+            ->join('users', 'users.id', '=', 'broker_reviews.user_id')
+            ->where('broker_reviews.broker_id', $broker_id)
+            ->orderBy('broker_reviews.created_at', 'desc')
+            ->paginate(15);
+        foreach ($reviews as $review) {
+            $review->advice_request = AdviceRequest::select('advice_requests.*')
+            ->join('broker_advice_requests', 'broker_advice_requests.request_id', '=', 'advice_requests.id')
+            ->where('broker_advice_requests.id', $review->broker_request_id)
+            ->first();
+        }
+        return $reviews;
     }
 
     public function blockAccount($id) {

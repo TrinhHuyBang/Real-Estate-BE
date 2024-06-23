@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('image');
             $table->text('subtitle');
-            $table->text('description');
+            $table->text('content');
             $table->text('source')->nullable();
             $table->string('province')->nullable();
             $table->tinyInteger('status')->default(1);

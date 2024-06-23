@@ -53,6 +53,7 @@ Route::group([
     Route::get('profile', [UserAuthController::class, 'profile']);
     Route::post('enterprise-register', [UserAuthController::class, 'enterpriseRegister']);
     Route::post('broker-register', [UserAuthController::class, 'brokerRegister']);
+    Route::get('/detail-registration', [UserAuthController::class, 'getDetailBrokerRegistration']);
     Route::group(['prefix' => 'account'], function () {
         Route::put('update-profile', [UserAuthController::class, 'updateProfile']);
         Route::put('update-password', [UserAuthController::class, 'updatePassword']);
@@ -78,6 +79,8 @@ Route::group(['prefix' => 'project'], function () {
     Route::group(['middleware' => 'auth'], function () {
         Route::post('/create', [ProjectController::class, 'create']);
         Route::get('/list-owner', [ProjectController::class, 'listOwnerProject']);
+        Route::put('/update/{id}', [ProjectController::class, 'update']);
+        Route::delete('/delete/{id}', [ProjectController::class, 'delete']);
     });
     Route::get('/', [UserProjectController::class, 'listProject']);
     Route::get('/list-project-options', [UserProjectController::class, 'listProjectOptions']);
@@ -93,6 +96,10 @@ Route::group(['prefix' => 'enterprise'], function () {
 Route::group(['prefix' => 'broker'], function () {
     Route::get('/list', [BrokerController::class, 'getList']);
     Route::get('/detail/{id}', [BrokerController::class, 'getDetail']);
+    Route::group(['middleware' => 'auth'], function () {
+        Route::post('/review', [BrokerController::class, 'createReview']);
+        Route::get('/list-review', [BrokerController::class, 'listReview']);
+    });
 });
 
 Route::group(['prefix' => 'user'], function () {
@@ -138,6 +145,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/list-broker-applied/{id}', [AdviceRequestController::class, 'listBrokerApplied']);
         Route::put('/delete-broker', [AdviceRequestController::class, 'deleteBroker']);
         Route::put('/accept-broker', [AdviceRequestController::class, 'acceptBroker']);
+        Route::delete('/cancle-registration/{id}', [AdviceRequestController::class, 'cancleRegistration']);
         Route::get('/broker/applied-request-list', [AdviceRequestController::class, 'listAppliedRequest']);
     });
 });

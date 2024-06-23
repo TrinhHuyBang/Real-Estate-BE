@@ -53,7 +53,9 @@ class ProjectRepo implements ProjectRepoInterface
     }
     public function edit($id, $data)
     {
-        return Project::where('id', $id)->update($data);
+        $project = Project::where('id', $id)->first();
+        $project->fill($data)->save();
+        return $project;
     }
     public function delete($id)
     {
@@ -111,7 +113,7 @@ class ProjectRepo implements ProjectRepoInterface
 
     // Lấy danh sách dự án của bản thân
     public function listOwnerProject($enterprise_id, $status, $project_status, $search) {
-        $query = Project::select(['id', 'name', 'description', 'project_status', 'note', 'size', 'size_unit', 'start_price', 'end_price', 'address', 'apartment', 'building'])
+        $query = Project::select(['id', 'name', 'status', 'description', 'project_status', 'note', 'size', 'size_unit', 'start_price', 'end_price', 'address', 'apartment', 'building'])
         ->where('enterprise_id', $enterprise_id)
         ->where('name', 'like', '%' . $search . '%');
 

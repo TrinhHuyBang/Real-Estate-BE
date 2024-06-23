@@ -47,6 +47,11 @@ class BrokerAdviceRequestRepo implements BrokerAdviceRequestRepoInteface
         return $brokerAdviceRequests;
     }
 
+    public function getByRequestIdAndBrokerId($request_id, $broker_id) {
+        $brokerAdviceRequest = BrokerAdviceRequest::where('request_id', $request_id)->where('broker_id', $broker_id)->first();
+        return $brokerAdviceRequest;
+    }
+
     public function getAvatarBroker($request_id) {
         $avatar = User::select('users.avatar')
             ->join('brokers', 'brokers.user_id', '=', 'users.id')
@@ -58,7 +63,7 @@ class BrokerAdviceRequestRepo implements BrokerAdviceRequestRepoInteface
     }
 
     public function getBrokerAccepted($request_id) {
-        $broker = Broker::select(['brokers.id', 'brokers.address', 'brokers.user_id'])
+        $broker = Broker::select(['brokers.id', 'brokers.address', 'brokers.user_id', 'broker_advice_requests.id as broker_request_id'])
             ->join('broker_advice_requests', 'broker_advice_requests.broker_id', '=', 'brokers.id')
             ->where('broker_advice_requests.request_id', $request_id)
             ->where('broker_advice_requests.status', BrokerAdviceRequestStatus::ACCEPTED)

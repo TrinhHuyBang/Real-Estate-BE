@@ -106,7 +106,6 @@ class AdminNewsController extends Controller
             if(Gate::forUser(auth('admin')->user())->allows('create-news', $news)) {
                 $admin = auth('admin')->user();
                 $data = $request->all();
-                $data['admin_id'] = $admin->id;
                 $news = $this->newsRepo->edit($id, $data);
                 return $this->handleSuccessJsonResponse($news);
             } else {

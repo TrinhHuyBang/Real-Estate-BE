@@ -23,7 +23,9 @@ class UserRepo implements UserRepoInterface
     }
     public function edit($id, $data)
     {
-        return User::where('id', $id)->update($data);
+        $user = User::where('id', $id)->first();
+        $user->fill($data)->save();
+        return $user;
     }
     public function delete($id)
     {

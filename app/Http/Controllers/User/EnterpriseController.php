@@ -37,8 +37,8 @@ class EnterpriseController extends Controller
             $search = $request->get('search');
             $field = $request->get('field');
             $data = [
-                'province' => $province ? $province : " ",
-                'district' => $district ? $district : " ",
+                'province' => $province ? $province : "",
+                'district' => $district ? $district : "",
                 'search' => $search,
                 'field' => $field
             ];

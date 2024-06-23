@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class RoleSeeder extends Seeder
+class AdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,11 +15,8 @@ class RoleSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('roles')->insert([
-            ['id' => 1, 'name' => 'post_manager'],
-            ['id' => 2, 'name' => 'project_manager'],
-            ['id' => 3, 'name' => 'news_manager'],
-            ['id' => 4, 'name' => 'user_account_manager'],
+        DB::table('admins')->insert([
+            ['name' => 'admin', 'email' => 'admin@gmail.com', 'password' => bcrypt('12345678'),'status' => 1,'role' => 0]
         ]);
     }
 }

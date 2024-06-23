@@ -63,13 +63,6 @@ class PostController extends Controller
         $user_id = Auth::id();
         $post = $request->except('images');
         $post['user_id'] = $user_id;
-        if ($request->get('unit') === "VND") {
-            $post['price_order'] = $request->get('price')/$request->get('size');
-        } else if ($request->get('unit') === "Thỏa thuận") {
-            $post['price_order'] = 0;
-        } else {
-            $post['price_order'] = $request->get('price');
-        }
         $postImages = $request->get('images');
         try {
             $newPost = $this->postRepo->create($post);
@@ -105,13 +98,6 @@ class PostController extends Controller
             }
             $post = $request->except('images');
             $post['user_id'] = $user_id;
-            if ($request->get('unit') === "VND") {
-                $post['price_order'] = $request->get('price')/$request->get('size');
-            } else if ($request->get('unit') === "Thỏa thuận") {
-                $post['price_order'] = 0;
-            } else {
-                $post['price_order'] = $request->get('price');
-            }
             $postImages = $request->get('images');
         
             $newPost = $this->postRepo->edit($id, $post);
@@ -127,7 +113,7 @@ class PostController extends Controller
             }
             return $this->handleSuccessJsonResponse($newPost, 'Thêm thành công');
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e);
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -203,7 +189,7 @@ class PostController extends Controller
             $posts = new LengthAwarePaginator($pagedResults, count($posts), $perPage, $currentPage);
             return $this->handleSuccessJsonResponse($posts);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e);
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -294,7 +280,7 @@ class PostController extends Controller
             $suggestedPosts = new LengthAwarePaginator($pagedResults, count($suggestedPosts), $perPage, $currentPage);
             return $this->handleSuccessJsonResponse($suggestedPosts);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e);
             return $this->handleExceptionJsonResponse($e);
         }
     }

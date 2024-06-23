@@ -13,6 +13,6 @@ return [
         'display' => 1,
         'hidden' => 0,
         'deleted' => 2,
-        'reject' => 3,
+        'rejected' => 3,
     ]
 ];

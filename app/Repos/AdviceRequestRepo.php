@@ -91,7 +91,9 @@ class AdviceRequestRepo implements AdviceRequestRepoInterface
 
     public function listAppliedRequestByBrokerId($broker_id, $status, $postType, $search)
     {
-        $query = AdviceRequest::select('advice_requests.*')->leftJoin('broker_advice_requests', 'broker_advice_requests.request_id', '=', 'advice_requests.id')
+        $query = AdviceRequest::select(['advice_requests.*', 'broker_advice_requests.status as applied_status', 'broker_reviews.rating'])
+            ->leftJoin('broker_advice_requests', 'broker_advice_requests.request_id', '=', 'advice_requests.id')
+            ->leftJoin('broker_reviews', 'broker_reviews.broker_request_id', '=', 'broker_advice_requests.id')
             ->where('advice_requests.status', config('requestStatus.displaying'))
             ->where('broker_advice_requests.broker_id', $broker_id)->whereIn('type_id', $postType)
             ->where(function ($func) use ($search) {

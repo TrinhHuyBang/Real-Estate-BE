@@ -120,8 +120,7 @@ class AdviceRequestController extends Controller
         try {
             $broker = $this->brokerAdviceRequestRepo->getBrokerAccepted($id);
             if ($broker) {
-                $broker = $this->brokerRepo->getBrokerDetail($broker);
-                Log::info($broker);
+                $broker = $this->brokerRepo->getBrokerDetail($broker, $broker->broker_request_id);
                 return $this->handleSuccessJsonResponse([$broker]);
             }
             return $this->handleSuccessJsonResponse([]);
@@ -260,6 +259,28 @@ class AdviceRequestController extends Controller
     }
 
     /**
+     * Huỷ yêu cầu đăng ký tư vấn
+     * delete /
+     *
+     * @param Int $id
+     * @return JsonResponse
+     */
+
+     public function cancleRegistration($id) {
+        try {
+            $user_id = auth()->user()->id;
+            $broker_id = $this->brokerRepo->getByUserId($user_id)->id;
+            $broker_advice_request = $this->brokerAdviceRequestRepo->getByRequestIdAndBrokerId($id, $broker_id);
+            $this->brokerAdviceRequestRepo->delete($broker_advice_request->id);
+            return $this->handleSuccessJsonResponse();
+        } catch (exception $e) {
+            Log::error($e);
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+
+    /**
      * Lấy danh sách các yêu cầu tư vấn của bản thân mình
      * get /
      *
@@ -315,4 +336,6 @@ class AdviceRequestController extends Controller
             return $this->handleExceptionJsonResponse($e);
         }
     }
+
+
 }

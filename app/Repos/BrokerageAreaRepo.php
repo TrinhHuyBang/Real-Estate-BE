@@ -23,9 +23,9 @@ class BrokerageAreaRepo implements BrokerageAreaRepoInterface
     public function edit($id, $data)
     {
     }
-    public function delete($id)
+    public function delete($broker_id)
     {
-        return BrokerageArea::where('id', $id)->delete();
+        return BrokerageArea::where('broker_id', $broker_id)->delete();
     }
 
     public function getByBrokerId($brokerId)

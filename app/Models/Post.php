@@ -33,7 +33,6 @@ class Post extends Model
         'created_at',
         'updated_at',
         'expired_at',
-        'price_order',
     ];
 
     protected $attributes = [

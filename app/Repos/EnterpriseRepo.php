@@ -1,6 +1,7 @@
 <?php
 namespace App\Repos;
 
+use App\Enums\EnterpriseRequestStatus;
 use App\Enums\ProjectStatus;
 use App\Interfaces\EnterpriseRepoInterface;
 use App\Models\Enterprise;
@@ -96,7 +97,7 @@ class EnterpriseRepo implements EnterpriseRepoInterface
     }
 
     public function checkRegisteredByUserId($user_id) {
-        $enterprise = Enterprise::where('user_id', $user_id)->where('status', 0)->first();
+        $enterprise = Enterprise::where('user_id', $user_id)->where('status', EnterpriseRequestStatus::APPLIED)->first();
         return $enterprise ? true : false;
     }
 

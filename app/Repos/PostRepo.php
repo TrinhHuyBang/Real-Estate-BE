@@ -122,13 +122,13 @@ class PostRepo implements PostRepoInterface
                 ->where(function ($query) use ($search) {
                     $query->where('title', 'like', '%' . $search . '%')
                         ->orWhere('description', 'like', '%' . $search . '%');
-                })->get();
+                })->orderByDesc('created_at')->get();
         } else {
             $posts = Post::where('user_id', auth()->user()->id)->whereIn('type_id', $postType)->where('status', $status)
                 ->where(function ($query) use ($search) {
                     $query->where('title', 'like', '%' . $search . '%')
                         ->orWhere('description', 'like', '%' . $search . '%');
-                })->get();
+                })->orderByDesc('created_at')->get();
         }
         return $posts;
     }
@@ -141,22 +141,14 @@ class PostRepo implements PostRepoInterface
     // Lấy danh sách bài đăng của người dùng khác
     public function listByUser($id, $postType)
     {
-        $posts = Post::where('user_id', $id)->whereIn('type_id', $postType)->whereIn('status', [config('status.displayPost'), config('status.expired')])->get();
+        $posts = Post::where('user_id', $id)->whereIn('type_id', $postType)->whereIn('status', [config('status.displayPost'), config('status.expired')])->orderByDesc('published_at')->get();
         return $posts;
     }
 
     public function suggested($topDistricts, $topPostTypes, $histories = [])
     {
-        $topHistories = [];
-        // List các bài đăng trong lịch sử xem của người dùng
-        if (count($histories)) {
-            foreach ($histories as $history) {
-                array_push($topHistories, $history->post_id);
-            }
-        }
-
         // Danh sách các bài đăng gợi ý phải nằm ngoài lịch sử xem của người dùng
-        $query = Post::where('status', config('status.displayPost'))->whereNotIn('id', $topHistories);
+        $query = Post::where('status', config('status.displayPost'))->whereNotIn('id', $histories);
         // Chỉ lấy danh sách các bài đăng nằm trong top tỉnh
         $query->whereIn('district', $topDistricts);
         // Chỉ lấy danh sách các bài đăng nằm trong top các type_id

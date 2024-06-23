@@ -22,9 +22,9 @@ class ProjectImageRepo implements ProjectImageRepoInterface
     {
         return ProjectImage::where('id', $id)->update($data);
     }
-    public function delete($id)
+    public function delete($project_id)
     {
-
+        ProjectImage::where('project_id', $project_id)->delete();
     }
 
     public function getImageByProject($project_id) {
