@@ -10,6 +10,7 @@ use App\Repos\ProjectRepo;
 use App\Traits\HandleJsonResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class UserProjectController extends Controller
@@ -30,13 +31,22 @@ class UserProjectController extends Controller
      * Lấy thông tin chi tiết một dự án
      * GET /
      *
-     * @param int $id  ( id của bài đăng cần lấy thông tin )
+     * @param int $id  ( id của dự án cần lấy thông tin )
      * @return JsonResponse
      */
     public function get($id)
     {
         try {
             $project = $this->projectRepo->get($id);
+            $user_id = Auth::check() ? auth()->user()->id : null;
+            $check_auth =  false;
+            if($user_id) {
+                $enterprise = $this->enterpriseRepo->getDetailByUserId($user_id);
+                $check_auth = $enterprise ? ($enterprise->user_id == $user_id ? true : false) : false;
+            }
+            if(!$check_auth) {
+                $this->projectRepo->edit($id, ['number_views' => $project->number_views + 1]);
+            }
             if (!$project) {
                 throw new Exception('Dự án không tồn tại');
             }
@@ -109,6 +119,26 @@ class UserProjectController extends Controller
             return $this->handleSuccessJsonResponse($projects);
         } catch (Exception $e) {
             Log::info($e);
+            return $this->handleExceptionJsonResponse($e);
+        }
+    }
+
+    /**
+     * Lấy danh sách các dự án nổi bật
+     * GET /
+     *
+     * @return JsonResponse
+     */
+    public function listFavoriteProject()
+    {
+        try {
+            $projects = $this->projectRepo->listFavoriteProject();
+            foreach ($projects as $project) {
+                $image = $this->projectImageRepo->getImageByProject($project->id);
+                $project->image = $image;
+            }
+            return $this->handleSuccessJsonResponse($projects);
+        } catch (Exception $e) {
             return $this->handleExceptionJsonResponse($e);
         }
     }

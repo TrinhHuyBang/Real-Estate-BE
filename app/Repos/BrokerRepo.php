@@ -30,38 +30,32 @@ class BrokerRepo implements BrokerRepoInterface
         $broker->number_consultations = BrokerAdviceRequest::where('broker_id', $broker->id)->whereIn('status', [BrokerAdviceRequestStatus::ACCEPTED, BrokerAdviceRequestStatus::DELETED])->count();
         $broker->rating = (float)number_format(BrokerReview::where('broker_id', $broker->id)
         ->avg('broker_reviews.rating'), 1);
-        $broker->reviews = BrokerReview::select(['users.name', 'users.avatar', 'users.id', 'broker_reviews.review', 'broker_reviews.rating', 'broker_reviews.created_at'])
-        ->leftJoin('users', 'users.id', '=', 'broker_reviews.user_id')
-        ->where('broker_reviews.broker_id', $id)
-        ->get();
+
         return $broker;
     }
-    public function createOrUpdate($user_id, $data) {
-        $broker = Broker::where('user_id', $user_id)->where('status', BrokerRequestStatus::APPLIED)->first();
-        if($broker) {
-            $broker->fill($data)->save();
-        } else {
-            $broker = new Broker();
-            $broker->fill($data)->save();
-        }
+
+    public function createOrUpdate($user_id, $data)
+    {
+        $broker = Broker::updateOrCreate(
+            ['user_id' => $user_id, 'status' => BrokerRequestStatus::APPLIED],
+            $data
+        );
         return $broker;
     }
 
     public function create($data)
     {
-        $broker = new Broker();
-        $broker->fill($data)->save();
-        return $broker;
+        return Broker::create($data);
     }
     public function edit($id, $data)
     {
-        $broker = Broker::where('id', $id)->first();
+        $broker = Broker::findOrFail($id);
         $broker->fill($data)->save();
         return $broker;
     }
     public function delete($id)
     {
-        return Broker::where('id', $id)->delete();
+        return Broker::destroy($id);
     }
 
     public function listBroker($data)
@@ -102,9 +96,9 @@ class BrokerRepo implements BrokerRepoInterface
         return $broker;
     }
 
-    public function getByUserId($userId) {
-        $broker = Broker::select(['id'])->where('user_id', $userId)->first();
-        return $broker;
+    public function getByUserId($userId)
+    {
+        return Broker::select('id')->where('user_id', $userId)->first();
     }
 
     public function getDetailByUserId($user_id) {
@@ -115,8 +109,9 @@ class BrokerRepo implements BrokerRepoInterface
         return $broker_infor;
     }
 
-    public function getBrokerDetail($broker, $broker_request_id = null) {
-        $broker->info = User::select(['name', 'phone', 'email', 'avatar'])->where('id', $broker->user_id)->first();
+    public function getBrokerDetail($broker, $broker_request_id = null)
+    {
+        $broker->info = User::select(['name', 'phone', 'email', 'avatar'])->find($broker->user_id);
         $broker->areas = BrokerageArea::select(['brokerage_areas.type_id', 'projects.name as project_name', 'brokerage_areas.province', 'brokerage_areas.district'])
         ->leftJoin('projects', 'projects.id', '=', 'brokerage_areas.project_id')
         ->where('broker_id', $broker->id)->get();
@@ -163,7 +158,8 @@ class BrokerRepo implements BrokerRepoInterface
         return $brokers;
     }
 
-    public function listReview($broker_id) {
+    public function listReview($broker_id)
+    {
         $reviews = BrokerReview::select([
                 'users.name',
                 'users.avatar',
@@ -186,23 +182,22 @@ class BrokerRepo implements BrokerRepoInterface
         return $reviews;
     }
 
-    public function blockAccount($id) {
-        $broker = Broker::where('id', $id)->first();
-        $user = User::where('id', $broker->user_id)->first();
-        if($user->status == 1) {
-            $user->update(['status' => 0]);
-            return 'Khoá tài khoản thành công';
-        } else {
-            $user->update(['status' => 1]);
-            return 'Mở khoá tài khoản thành công';
-        }
+    public function blockAccount($id)
+    {
+        $broker = Broker::findOrFail($id);
+        $user = User::findOrFail($broker->user_id);
+        $user->status = !$user->status;
+        $user->save();
+        return $user->status ? 'Mở khoá tài khoản thành công' : 'Khoá tài khoản thành công';
     }
 
-    public function countBroker() {
+    public function countBroker()
+    {
         return Broker::where('status', 1)->count();
     }
 
-    public function countRequest() {
+    public function countRequest()
+    {
         return Broker::where('status', 0)->count();
     }
 }

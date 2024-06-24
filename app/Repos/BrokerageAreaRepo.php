@@ -16,9 +16,7 @@ class BrokerageAreaRepo implements BrokerageAreaRepoInterface
     }
     public function create($data)
     {
-        $brokerageArea = new BrokerageArea();
-        $brokerageArea->fill($data)->save();
-        return $brokerageArea;
+        return BrokerageArea::create($data);
     }
     public function edit($id, $data)
     {
@@ -32,8 +30,9 @@ class BrokerageAreaRepo implements BrokerageAreaRepoInterface
     {
         
     }
-    
-    public function deleteByBrokerId($broker_id) {
+
+    public function deleteByBrokerId($broker_id)
+    {
         return BrokerageArea::where('broker_id', $broker_id)->delete();
     }
 }

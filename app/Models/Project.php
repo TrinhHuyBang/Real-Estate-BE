@@ -31,10 +31,12 @@ class Project extends Model
         'legal_documents',
         'builders',
         'designer',
-        'status'
+        'status',
+        'number_views'
     ];
 
     protected $attributes = [
         'status' => 0,
+        'number_views' => 0,
     ];
 }

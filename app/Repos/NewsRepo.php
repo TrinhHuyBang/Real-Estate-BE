@@ -49,7 +49,7 @@ class NewsRepo implements NewsRepoInterface
         } else {
             $query->where('status', 1);
         }
-        $list_news = $query->paginate(10);
+        $list_news = $query->orderBy('created_at', 'DESC')->paginate(10);
         return $list_news;
     }
 

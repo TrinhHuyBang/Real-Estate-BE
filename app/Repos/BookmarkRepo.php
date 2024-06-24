@@ -24,7 +24,7 @@ class BookmarkRepo implements BookmarkRepoInterface
     }
     public function delete($id)
     {
-        return Bookmark::where('id', $id)->delete();
+        return Bookmark::destroy($id);
     }
 
     public function getByPostId($postId)
@@ -38,6 +38,11 @@ class BookmarkRepo implements BookmarkRepoInterface
 
     public function listPostOrderBy($postType, $orderBy, $orderWith)
     {
-        return Bookmark::rightJoin('posts', 'bookmarks.post_id', '=', 'posts.id')->where('bookmarks.user_id', auth()->user()->id)->whereIn('type_id', $postType)->where('status', config('status.displayPost'))->orderBY($orderWith, $orderBy)->get();
+        return Bookmark::rightJoin('posts', 'bookmarks.post_id', '=', 'posts.id')
+            ->where('bookmarks.user_id', auth()->user()->id)
+            ->whereIn('posts.type_id', $postType)
+            ->where('posts.status', config('status.displayPost'))
+            ->orderBy($orderWith, $orderBy)
+            ->get();
     }
 }

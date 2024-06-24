@@ -39,6 +39,7 @@ return new class extends Migration
             $table->string('builders')->nullable(); // Cty xây dựng dự án
             $table->string('designer')->nullable(); // Doanh nghiệp thiết kế
             $table->tinyInteger('status')->nullable(); // Trạng thái của bài đăng (0: đang chờ duyệt , 1: Đang hiển thị , 2: bị từ chối)
+            $table->integer('number_views')->default(0);
             $table->timestamps();
         });
     }

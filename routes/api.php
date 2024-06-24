@@ -83,6 +83,7 @@ Route::group(['prefix' => 'project'], function () {
         Route::delete('/delete/{id}', [ProjectController::class, 'delete']);
     });
     Route::get('/', [UserProjectController::class, 'listProject']);
+    Route::get('/list-favorite', [UserProjectController::class, 'listFavoriteProject']);
     Route::get('/list-project-options', [UserProjectController::class, 'listProjectOptions']);
     Route::get('/detail/{id}', [UserProjectController::class, 'get']);
 });

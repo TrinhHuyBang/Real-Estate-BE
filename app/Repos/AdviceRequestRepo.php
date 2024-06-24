@@ -13,24 +13,21 @@ class AdviceRequestRepo implements AdviceRequestRepoInterface
     }
     public function get($id)
     {
-        $adviceRequest = AdviceRequest::where('id', $id)->first();
-        return $adviceRequest;
+        return AdviceRequest::find($id);
     }
     public function create($data)
     {
-        $adviceRequest = new AdviceRequest();
-        $adviceRequest->fill($data)->save();
-        return $adviceRequest;
+        return AdviceRequest::create($data);
     }
     public function edit($id, $data)
     {
-        $adviceRequest = AdviceRequest::where('id', $id)->first();
+        $adviceRequest = AdviceRequest::findOrFail($id);
         $adviceRequest->fill($data)->save();
         return $adviceRequest;
     }
     public function delete($id)
     {
-        return AdviceRequest::where('id', $id)->delete();
+        return AdviceRequest::destroy($id);
     }
 
     public function getList()
@@ -40,20 +37,18 @@ class AdviceRequestRepo implements AdviceRequestRepoInterface
 
     public function listByStatus($status, $postType, $search = '')
     {
-        if ($status == config('requestStatus.all')) {
-            $adviceRequests = AdviceRequest::where('user_id', auth()->user()->id)->whereIn('type_id', $postType)
-                ->where(function ($query) use ($search) {
-                    $query->where('title', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
-                })->paginate(10);
-        } else {
-            $adviceRequests = AdviceRequest::where('user_id', auth()->user()->id)->whereIn('type_id', $postType)->where('status', $status)
-                ->where(function ($query) use ($search) {
-                    $query->where('title', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
-                })->paginate(10);
+        $query = AdviceRequest::where('user_id', auth()->user()->id)
+            ->whereIn('type_id', $postType)
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
+
+        if ($status != config('requestStatus.all')) {
+            $query->where('status', $status);
         }
-        return $adviceRequests;
+
+        return $query->paginate(10);
     }
 
     public function listByBroker($broker_id, $except, $data)
@@ -69,24 +64,22 @@ class AdviceRequestRepo implements AdviceRequestRepoInterface
         ->whereNotIn('advice_requests.id', $except)
         ->where('advice_requests.title', 'like', '%'.$data['search'].'%');
 
-        if(Arr::get($data, 'project_id')) {
+        if (Arr::get($data, 'project_id')) {
             $query->where('advice_requests.project_id', Arr::get($data, 'project_id'));
         } else {
             $query->where('advice_requests.province', 'like', '%'.$data['province'].'%')
-            ->where('advice_requests.district', 'like', '%'.$data['district'].'%');
+                    ->where('advice_requests.district', 'like', '%'.$data['district'].'%');
         }
 
         if (!$data['type_id']) {
-            if ($data['type'] === 'sell') {
-                $query->whereIn('brokerage_areas.type_id', config('postType.sell'));
-            } else if ($data['type'] === 'rent') {
-                $query->whereIn('brokerage_areas.type_id', config('postType.rent'));
+            $postTypeConfig = config('postType.' . $data['type']);
+            if ($postTypeConfig) {
+                $query->whereIn('brokerage_areas.type_id', $postTypeConfig);
             }
         } else {
             $query->where('brokerage_areas.type_id', $data['type_id']);
         }
-        $matchedRequests = $query->paginate(10);
-        return $matchedRequests;
+        return $query->paginate(10);
     }
 
     public function listAppliedRequestByBrokerId($broker_id, $status, $postType, $search)
@@ -100,10 +93,9 @@ class AdviceRequestRepo implements AdviceRequestRepoInterface
                 $func->where('title', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%');
             });
-        if($status != config('brokerAdviceRequestStatus.ALL')) {
+        if ($status != config('brokerAdviceRequestStatus.ALL')) {
             $query->where('broker_advice_requests.status', $status);
         }
-        $adviceRequests = $query->paginate(10);
-        return $adviceRequests;
+        return $query->paginate(10);
     }
 }

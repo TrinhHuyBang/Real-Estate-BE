@@ -100,6 +100,16 @@ class ProjectRepo implements ProjectRepoInterface
         return $projects;
     }
 
+    // Lấy danh sách dự án nổi bật
+    public function listFavoriteProject() {
+        $projects = Project::select(['id', 'name', 'project_status', 'note', 'size', 'size_unit', 'start_price', 'end_price', 'province', 'district', 'apartment', 'building'])
+        ->where('status', config('status.project.display'))
+        ->orderByDesc('number_views')
+        ->limit(4)
+        ->get();
+        return $projects;
+    }
+
     // Lấy danh sách dự án để cho vào ô chọn dự án dựa trên địa chỉ như thành phố và quận huyện
     public function listProjectOptions($data) {
         $projects = Project::select(['id', 'name', 'district', 'ward', 'street', 'address'])

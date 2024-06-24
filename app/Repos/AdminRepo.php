@@ -45,29 +45,32 @@ class AdminRepo implements AdminRepoInterface
         return Admin::where('email', $email)->first();
     }
 
-    public function list($search) {
-        $admins = Admin::select(['id', 'name', 'email', 'role', 'status'])
-        ->where('email', 'like', '%' . $search . '%')
-        ->where('id', '!=', auth('admin')->user()->id)
-        ->paginate(15);
-        return $admins;
+    public function list($search)
+    {
+        $authAdminId = auth('admin')->id();
+        return Admin::select(['id', 'name', 'email', 'role', 'status'])
+            ->where('email', 'like', '%' . $search . '%')
+            ->where('id', '!=', $authAdminId)
+            ->paginate(15);
     }
 
-    public function blockAccount($id) {
-        $admin = Admin::where('id', $id)->first();
-        if($admin->status == 1) {
-            $admin->update(['status' => 0]);
-            return 'Khoá tài khoản thành công';
-        } else {
-            $admin->update(['status' => 1]);
-            return 'Mở khoá tài khoản thành công';
-        }
+    public function blockAccount($id)
+    {
+        $admin = Admin::findOrFail($id);
+        $status = $admin->status == 1 ? 0 : 1;
+        $admin->update(['status' => $status]);
+
+        return $status == 1 ? 'Mở khoá tài khoản thành công' : 'Khoá tài khoản thành công';
     }
 
-    public function updateRole($id, $roles) {
+    public function updateRole($id, $roles)
+    {
         AdminRole::where('admin_id', $id)->delete();
-        foreach($roles as $role) {
-            AdminRole::create(['admin_id' => $id, 'role_id' => $role]);
-        }
+
+        $data = array_map(function ($role) use ($id) {
+            return ['admin_id' => $id, 'role_id' => $role];
+        }, $roles);
+
+        AdminRole::insert($data);
     }
 }
