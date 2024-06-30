@@ -22,7 +22,7 @@ class EmailController extends Controller
             SendContactEmail::dispatch($user_name, $phone, $to_email, $content)->onQueue('email');
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

@@ -41,8 +41,8 @@ class UserProjectController extends Controller
             $user_id = Auth::check() ? auth()->user()->id : null;
             $check_auth =  false;
             if($user_id) {
-                $enterprise = $this->enterpriseRepo->getDetailByUserId($user_id);
-                $check_auth = $enterprise ? ($enterprise->user_id == $user_id ? true : false) : false;
+                $enterprise = $this->enterpriseRepo->checkIsEnteprise($user_id);
+                $check_auth = $enterprise ? ($enterprise->user_id == $user_id ? true : false) : false;  
             }
             if(!$check_auth) {
                 $this->projectRepo->edit($id, ['number_views' => $project->number_views + 1]);
@@ -52,6 +52,7 @@ class UserProjectController extends Controller
             }
             return $this->handleSuccessJsonResponse($project);
         } catch (Exception $e) {
+            Log::error($e);
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -94,7 +95,7 @@ class UserProjectController extends Controller
             }
             return $this->handleSuccessJsonResponse($projects);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -118,7 +119,7 @@ class UserProjectController extends Controller
             $projects = $this->projectRepo->listProjectOptions($data);
             return $this->handleSuccessJsonResponse($projects);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

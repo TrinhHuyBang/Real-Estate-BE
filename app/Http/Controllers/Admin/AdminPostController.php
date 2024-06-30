@@ -169,7 +169,7 @@ class AdminPostController extends Controller
     {
         try {
             if(Gate::forUser(auth('admin')->user())->allows('update-post', Post::class)) {
-                $day_display = 14;
+                $day_display = 30;
                 $published_at = Carbon::now();
                 $expired_at = Carbon::now()->addDays($day_display);
                 $this->postRepo->edit($id, ['status' => config('status.displayPost'), 'published_at' => $published_at, 'expired_at' => $expired_at]);

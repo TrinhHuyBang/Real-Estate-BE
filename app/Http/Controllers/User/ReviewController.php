@@ -59,7 +59,7 @@ class ReviewController extends Controller
             if(!$review) {
                 throw new Exception('Thêm hoặc cập nhật đánh giá không thành công');
             }
-            $this->handleSuccessJsonResponse();
+            return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);

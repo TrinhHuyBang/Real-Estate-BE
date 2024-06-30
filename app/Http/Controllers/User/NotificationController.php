@@ -76,7 +76,7 @@ class NotificationController extends Controller
             }
             return $this->handleSuccessJsonResponse($notifications);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -92,7 +92,7 @@ class NotificationController extends Controller
             $notification = $this->notificationRepo->edit($id, ['status' => 1]);
             return $this->handleSuccessJsonResponse($notification);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -111,7 +111,7 @@ class NotificationController extends Controller
             }
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

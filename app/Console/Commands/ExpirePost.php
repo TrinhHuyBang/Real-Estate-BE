@@ -45,15 +45,9 @@ class ExpirePost extends Command
     public function handle()
     {
         try {
-            event(new PostNotifyEvent(['user_id' => 31]));
+            $this->postRepo->updateExpiredPost();
         } catch (Exception $e) {
-            Log::error($e);
-            //throw $th;
+            Log::error($e->getMessage());
         }
-        // try {
-        //     $this->postRepo->updateExpiredPost();
-        // } catch (Exception $e) {
-        //     Log::info($e);
-        // }
     }
 }

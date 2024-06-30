@@ -68,7 +68,7 @@ class BrokerController extends Controller
             $brokers = new LengthAwarePaginator($pagedResults, count($brokers), $perPage, $currentPage);
             return $this->handleSuccessJsonResponse($brokers);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -135,7 +135,7 @@ class BrokerController extends Controller
             ]);
             return $this->handleSuccessJsonResponse($brokerReview);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

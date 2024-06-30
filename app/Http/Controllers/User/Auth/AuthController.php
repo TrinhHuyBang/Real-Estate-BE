@@ -97,7 +97,7 @@ class AuthController extends Controller
             }
             return $this->respondWithToken($token);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -160,7 +160,7 @@ class AuthController extends Controller
             $user = $this->userRepo->edit($user->id, ['email_verified_at' => Carbon::now()]);
             return redirect()->route('verifySuccess');
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return redirect()->route('verifyFail');
         }
     }
@@ -229,7 +229,7 @@ class AuthController extends Controller
             Mail::to($email)->send(new SendEmail($data));
             return $this->handleSuccessJsonResponse($token);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -406,7 +406,7 @@ class AuthController extends Controller
             }
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -417,7 +417,7 @@ class AuthController extends Controller
             $broker = $this->brokerRepo->getDetailRegistration(auth()->user()->id);
             return $this->handleSuccessJsonResponse($broker);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -452,7 +452,7 @@ class AuthController extends Controller
             }
             return $this->handleSuccessJsonResponse();
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

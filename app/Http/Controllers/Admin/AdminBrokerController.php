@@ -92,7 +92,7 @@ class AdminBrokerController extends Controller
                 throw new Exception("Bạn không có quyền để thực hiện hành động này", 403);
             }
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -116,7 +116,7 @@ class AdminBrokerController extends Controller
                 throw new Exception("Bạn không có quyền để thực hiện hành động này", 403);
             }
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

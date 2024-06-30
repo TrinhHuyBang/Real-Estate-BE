@@ -110,7 +110,11 @@ class PostRepo implements PostRepoInterface
 
     public function getListAll()
     {
-        $posts = Post::where('status', config('status.displayPost'))->orderByDesc('published_at')->get();
+        $query = Post::where('status', config('status.displayPost'));
+        if(auth()->check()) {
+            $query->where('user_id', '!=', auth()->user()->id);
+        }
+        $posts = $query->orderByDesc('published_at')->get();
         return $posts;
     }
 
@@ -145,10 +149,22 @@ class PostRepo implements PostRepoInterface
         return $posts;
     }
 
+    // Lấy danh sách id bài đăng của chính mình
+    public function listByOwner($user_id)
+    {
+        $posts = Post::select(['id'])
+            ->where('user_id', $user_id)
+            ->get()->pluck('id');
+        return $posts;
+    }
+
     public function suggested($topDistricts, $topPostTypes, $histories = [])
     {
         // Danh sách các bài đăng gợi ý phải nằm ngoài lịch sử xem của người dùng
         $query = Post::where('status', config('status.displayPost'))->whereNotIn('id', $histories);
+        if(auth()->check()) {
+            $query->where('user_id', '!=', auth()->user()->id);
+        }
         // Chỉ lấy danh sách các bài đăng nằm trong top tỉnh
         $query->whereIn('district', $topDistricts);
         // Chỉ lấy danh sách các bài đăng nằm trong top các type_id
@@ -160,9 +176,9 @@ class PostRepo implements PostRepoInterface
 
     public function updateExpiredPost()
     {
-        $expiredDate = Carbon::now()->subDays(14);
+        $current_date = Carbon::now();
         Post::where('status', config('status.displayPost'))
-            ->where('published_at', '<', $expiredDate)
+            ->where('expired_at', '<=', $current_date)
             ->update(['status' => config('status.expired')]);
     }
 

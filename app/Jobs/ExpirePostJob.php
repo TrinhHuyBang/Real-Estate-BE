@@ -38,7 +38,7 @@ class ExpirePostJob implements ShouldQueue
             Artisan::call('post:expired');
             Log::info('=== START Update status for expired post ===');
         } catch(Exception $e){
-            Log::error($e);
+            Log::error($e->getMessage());
         }
     }
 }

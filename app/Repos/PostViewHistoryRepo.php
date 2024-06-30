@@ -70,7 +70,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     }
 
     // Đưa ra top các district mà có số lượt xem lớn nhất (lớn hơn hoặc bẳng mức trung bình)
-    // Ví dụ : trong số các bài đăng đã xem trong 7 ngày gần nhất có 3 district thì district nào
+    // Ví dụ : trong số các bài đăng đã xem trong 2 ngày gần nhất có 3 district thì district nào
     // có số lượng trung bình lớn hơn hoặc bằng 1/3 thì sẽ được lấy ra
     public function topDistricts($user_id)
     {
@@ -79,7 +79,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
                 $query->where('post_view_histories.user_id', $user_id)
                     ->orWhere('post_view_histories.guest_id', $user_id);
             })
-            // ->where('post_view_histories.created_at', '>=', Carbon::now()->subDays(7))
+            ->where('post_view_histories.viewed_at', '>=', Carbon::now()->subDays(2))
             ->select(DB::raw('posts.district as district'), DB::raw('COUNT(*) as post_count'))
             ->groupBy('posts.district')
             ->orderBy('post_count', 'desc')
@@ -106,7 +106,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
                 $query->where('post_view_histories.user_id', $user_id)
                     ->orWhere('post_view_histories.guest_id', $user_id);
             })
-            // ->where('post_view_histories.created_at', '>=', Carbon::now()->subDays(7))
+            ->where('post_view_histories.viewed_at', '>=', Carbon::now()->subDays(2))
             ->select(DB::raw('posts.ward as ward'), DB::raw('COUNT(*) as ward_count'))
             ->groupBy('posts.ward')
             ->orderBy('ward_count', 'desc')
@@ -125,7 +125,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     }
 
     // Đưa ra top các type mà có số lượt xem lớn nhất (lớn hơn hoặc bẳng mức trung bình)
-    // Ví dụ : trong số các bài đăng đã xem trong 7 ngày gần nhất có 3 type thì type nào
+    // Ví dụ : trong số các bài đăng đã xem trong 2 ngày gần nhất có 3 type thì type nào
     // có số lượng trung bình lớn hơn hoặc bằng 1/3 thì sẽ được lấy ra
     public function topPostType($user_id)
     {
@@ -134,7 +134,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
                 $query->where('post_view_histories.user_id', $user_id)
                     ->orWhere('post_view_histories.guest_id', $user_id);
             })
-            // ->where('post_view_histories.created_at', '>=', Carbon::now()->subDays(7))
+            ->where('post_view_histories.viewed_at', '>=', Carbon::now()->subDays(2))
             ->select(DB::raw('posts.type_id as type_id'), DB::raw('COUNT(*) as type_count'))
             ->groupBy('posts.type_id')
             ->orderBy('type_count', 'desc')
@@ -153,7 +153,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     }
 
     // Đưa ra top các mức giá mà có số lượt xem lớn nhất tƯơng ứng với từng loại bài đăng (lớn hơn hoặc bẳng mức trung bình)
-    // Ví dụ : trong số các bài đăng đã xem trong 7 ngày gần nhất xét với mảng top type_id đã lấy được
+    // Ví dụ : trong số các bài đăng đã xem trong 2 ngày gần nhất xét với mảng top type_id đã lấy được
     // có 2 mức giá là 2,3 thì lấy ra mức giá có mức xuất hiện lớn hơn
     // Mức giá được tính tương ứng với từng loại bài đăng ví dụ : Bán nhà riêng thì khoảng giá giao động từng mức có thể là 1 tỷ
     public function topPrice($user_id, $topPostType) {
@@ -165,6 +165,7 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
                     $query->where('post_view_histories.user_id', $user_id)
                         ->orWhere('post_view_histories.guest_id', $user_id);
                 })
+                ->where('post_view_histories.viewed_at', '>=', Carbon::now()->subDays(2))
                 ->where('type_id', $type_id)
                 ->get();
     
@@ -205,12 +206,13 @@ class PostViewHistoryRepo implements PostViewHistoryRepoInterface
     public function topSize($user_id, $topPostType) {
         $result = [];
         foreach ($topPostType as $type_id) {
-            $size_interval = config("levelSize.$type_id");
             $posts = PostViewHistory::join('posts', 'post_view_histories.post_id', '=', 'posts.id')
-            ->where(function ($query) use ($user_id){
-                $query->where('post_view_histories.user_id', $user_id)
-                    ->orWhere('post_view_histories.guest_id', $user_id);
-            })->where('type_id', $type_id)->get();
+                ->where(function ($query) use ($user_id){
+                    $query->where('post_view_histories.user_id', $user_id)
+                        ->orWhere('post_view_histories.guest_id', $user_id);
+                })
+                ->where('post_view_histories.viewed_at', '>=', Carbon::now()->subDays(2))
+                ->where('type_id', $type_id)->get();
 
             // Tính tổng số bài đăng cho mỗi type
             $total_posts = $posts->count();

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use App\Enums\BrokerAdviceRequestStatus;
+use App\Jobs\sendMailForAcceptBrokerJob;
 use App\Repos\BrokerReviewRepo;
 
 class AdviceRequestController extends Controller
@@ -82,7 +83,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($advice_request);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -103,7 +104,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($advice_request);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -125,7 +126,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse([]);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -146,7 +147,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($brokers);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -168,7 +169,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($advice_request);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -195,7 +196,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($broker_advice_request);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -210,16 +211,20 @@ class AdviceRequestController extends Controller
 
     public function acceptBroker(Request $request) {
         try {
+            $user = auth()->user();
             $request_id = $request->get('request_id');
             $broker_id = $request->get('broker_id');
+            $broker = $this->brokerRepo->getUserDetail($broker_id);
             $status = BrokerAdviceRequestStatus::ACCEPTED;
             $broker_advice_request = $this->brokerAdviceRequestRepo->editStatus($request_id, $broker_id, $status);
             if(!$broker_advice_request) {
                 throw new Exception('Người môi giới chưa đăng kí hoặc yêu cầu tư vấn không tồn tại');
             }
+            sendMailForAcceptBrokerJob::dispatch($user->name, $user->email, $user->phone, $broker->email, false)->onQueue('email');
+            sendMailForAcceptBrokerJob::dispatch($broker->name, $broker->email, $broker->phone, $user->email, true)->onQueue('email');
             return $this->handleSuccessJsonResponse($broker_advice_request);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -253,7 +258,7 @@ class AdviceRequestController extends Controller
             }
             return $this->handleSuccessJsonResponse($broker_advice_request);
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -274,7 +279,7 @@ class AdviceRequestController extends Controller
             $this->brokerAdviceRequestRepo->delete($broker_advice_request->id);
             return $this->handleSuccessJsonResponse();
         } catch (exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

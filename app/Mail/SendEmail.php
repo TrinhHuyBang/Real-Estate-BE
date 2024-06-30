@@ -50,6 +50,9 @@ class SendEmail extends Mailable
             case '1':
                 $view = 'emails.contactEmail';
                 break;
+            case '2':
+                $view = 'emails.acceptBroker';
+                break;
             default:
                 $view = 'emails.verifyEmail';
                 break;

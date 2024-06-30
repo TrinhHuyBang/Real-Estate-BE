@@ -98,7 +98,7 @@ class DashboardController extends Controller
             $data = [$post, $project, $user, $enterprise, $broker, $rating];
             return $this->handleSuccessJsonResponse($data);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -114,7 +114,7 @@ class DashboardController extends Controller
             $reviews = $this->reviewRepo->list();
             return $this->handleSuccessJsonResponse($reviews);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleErrorJsonResponse($e);
         }
         

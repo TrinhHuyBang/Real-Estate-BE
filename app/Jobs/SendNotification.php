@@ -53,7 +53,7 @@ class SendNotification implements ShouldQueue
             ]);
             event(new PostNotifyEvent($notification));
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
         }
     }
 }

@@ -70,7 +70,7 @@ class AdminAuthController extends Controller
             $admin = $this->adminRepo->get($admin_id);
             return $this->handleSuccessJsonResponse($admin);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

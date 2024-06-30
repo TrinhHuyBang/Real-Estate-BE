@@ -77,7 +77,7 @@ class PostController extends Controller
             }
             return $this->handleSuccessJsonResponse($newPost, 'Thêm thành công');
         } catch (Exception $e) {
-            Log::info($e->getMessage());
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -113,7 +113,7 @@ class PostController extends Controller
             }
             return $this->handleSuccessJsonResponse($newPost, 'Thêm thành công');
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -189,7 +189,7 @@ class PostController extends Controller
             $posts = new LengthAwarePaginator($pagedResults, count($posts), $perPage, $currentPage);
             return $this->handleSuccessJsonResponse($posts);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -220,7 +220,7 @@ class PostController extends Controller
             $topSizes = $this->postViewHistoryRepo->topSize($user_id, $topPostTypeId);
             $topWards = $this->postViewHistoryRepo->topWards($user_id);
 
-            $suggestedPosts = $this->postRepo->suggested($topDistrictName, $topPostTypeId);
+            $suggestedPosts = $this->postRepo->suggested($topDistrictName, $topPostTypeId, $history);
             if(!count($suggestedPosts)) {
                 $posts = $this->postRepo->getListAll();
                 $posts = PostResource::collection($posts)->values()->all();
@@ -280,7 +280,7 @@ class PostController extends Controller
             $suggestedPosts = new LengthAwarePaginator($pagedResults, count($suggestedPosts), $perPage, $currentPage);
             return $this->handleSuccessJsonResponse($suggestedPosts);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

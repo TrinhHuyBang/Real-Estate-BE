@@ -45,7 +45,7 @@ class EnterpriseController extends Controller
             $enterprises = $this->enterpriseRepo->listEnterprise($data, ['enterprises.id', 'address', 'name', 'abbreviation', 'logo', 'phone_number', 'address']);
             return $this->handleSuccessJsonResponse($enterprises);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -64,7 +64,7 @@ class EnterpriseController extends Controller
             $enterprise->projects = $this->projectRepo->listProjectByEnterprise($id);
             return $this->handleSuccessJsonResponse($enterprise);
         } catch (Exception $e) {
-            Log::info($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

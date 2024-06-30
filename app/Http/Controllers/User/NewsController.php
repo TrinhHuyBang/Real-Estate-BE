@@ -35,7 +35,7 @@ class NewsController extends Controller
             $news = $this->newsRepo->listHeadline($type);
             return $this->handleSuccessJsonResponse($news);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }
@@ -52,7 +52,7 @@ class NewsController extends Controller
             $news = $this->newsRepo->list($type);
             return $this->handleSuccessJsonResponse($news);
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error($e->getMessage());
             return $this->handleExceptionJsonResponse($e);
         }
     }

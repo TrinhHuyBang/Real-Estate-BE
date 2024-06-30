@@ -96,6 +96,11 @@ class EnterpriseRepo implements EnterpriseRepoInterface
         return $enterprise_infor;
     }
 
+    public function checkIsEnteprise($user_id) {
+        $enterprise_infor = Enterprise::where('user_id', $user_id)->first();
+        return $enterprise_infor;
+    }
+
     public function checkRegisteredByUserId($user_id) {
         $enterprise = Enterprise::where('user_id', $user_id)->where('status', EnterpriseRequestStatus::APPLIED)->first();
         return $enterprise ? true : false;

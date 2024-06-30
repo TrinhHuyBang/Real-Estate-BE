@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminPermissionController;
 use App\Http\Controllers\Admin\AdminPostController;
 use App\Http\Controllers\Admin\AdminProjectController;
+use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminRoleController;
 use App\Http\Controllers\Admin\AdminSubAdminController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\User\NewsController;
 use App\Http\Controllers\User\NotificationController;
 use App\Http\Controllers\User\PostController;
 use App\Http\Controllers\User\PostViewHistoryController;
+use App\Http\Controllers\User\ReportController;
 use App\Http\Controllers\User\ReviewController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserProjectController;
@@ -228,9 +230,16 @@ Route::group(['prefix' => 'admin'], function () {
             Route::get('/overview', [DashboardController::class, 'overview']);
             Route::get('/list-review', [DashboardController::class, 'listReview']);
         });
+
+        Route::group(['prefix' => 'report'], function () {
+            Route::get('/', [AdminReportController::class, 'list']);
+            Route::put('/processed/{id}', [AdminReportController::class, 'processed']);
+            Route::delete('/delete/{id}', [AdminReportController::class, 'delete']);
+        });
 });
 
 Route::post('/send-email', [EmailController::class, 'sendContactEmail']);
+Route::post('/report/create', [ReportController::class, 'create']);
 
 
 

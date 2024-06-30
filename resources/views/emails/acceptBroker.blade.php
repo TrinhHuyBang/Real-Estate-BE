@@ -188,7 +188,7 @@
                                                                         <td style="padding:0px 30px 0px 30px; line-height:36px; text-align:inherit; background-color:#ffffff;" height="100%" valign="top" bgcolor="#ffffff" role="module-content">
                                                                             <div>
                                                                                 <div style=" text-align: center">
-                                                                                    <span style="font-weight: 600; font-size: 20px; line-height: 27px;"> Xác Thực Email </span>
+                                                                                    <span style="font-weight: 600; font-size: 20px; line-height: 27px;"> {{ $data['title'] }} </span>
                                                                                 </div>
                                                                                 <div></div>
                                                                             </div>
@@ -203,49 +203,34 @@
                                                                             <div>
                                                                                 <div style=" text-align: center">
                                                                                     <span
-                                                                                        style="font-size: 14px">Chào {{ $data['user_name'] }}, chào mừng tới <b>Quản lý và quảng bá BĐS</b>!</span><span
+                                                                                        style="font-size: 14px">{{ $data['content'] }}</span><span
                                                                                         style="color: #000000; font-size: 18px; font-family: arial, helvetica, sans-serif"></span><span
                                                                                         style="font-size: 18px"></span>
                                                                                 </div>
                                                                                 <div style=" text-align: center">
                                                                                     <span
-                                                                                        style="font-size: 14px">Hãy click vào nút bên dưới để xác thực email của bạn.</span><span
+                                                                                        style="font-size: 14px">{{ $data['user_name'] }}</span><span
                                                                                         style="color: #000000; font-size: 18px; font-family: arial, helvetica, sans-serif"></span><span
                                                                                         style="font-size: 18px"></span>
                                                                                 </div>
                                                                                 <div style=" text-align: center">
                                                                                     <span
-                                                                                        style="font-size: 14px">Nếu bạn không đăng ký tài khoản tại <b> Quản lý và quảng bá BĐS </b>, hãy bỏ qua email này! </span><span
+                                                                                        style="font-size: 14px">Số điện thoại : {{ $data['phone'] }}</span><span
                                                                                         style="color: #000000; font-size: 18px; font-family: arial, helvetica, sans-serif"></span><span
                                                                                         style="font-size: 18px"></span>
                                                                                 </div>
-
+                                                                                <div style=" text-align: center">
+                                                                                    <span
+                                                                                        style="font-size: 14px">Email : {{ $data['user_email'] }}</span><span
+                                                                                        style="color: #000000; font-size: 18px; font-family: arial, helvetica, sans-serif"></span><span
+                                                                                        style="font-size: 18px"></span>
+                                                                                </div>
                                                                                 <div></div>
                                                                             </div>
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
-                                                            <table style="margin-top: 20px" border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="d050540f-4672-4f31-80d9-b395dc08abe1">
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td align="center" bgcolor="#ffffff" class="outer-td" style="padding:0px 0px 0px 0px; background-color:#ffffff;">
-                                                                            <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
-                                                                                <tbody>
-                                                                                    <tr>
-                                                                                        <td align="center" class="inner-td" style="border-radius:6px; font-size:16px; text-align:center;">
-                                                                                                <a class="button_email"
-                                                                                                    href="{{ $data['redirect_url'] }}"
-                                                                                                    style="text-decoration-line: none !important; color: #ffffff; padding: 12px 24px; font-weight: 600; line-height: 24px; font-size: 16px; transition: ease-in-out 0.3s; letter-spacing: 0.04em; border-radius: 0.42rem;  background-color: #ed66b2; display: inline-block;"
-                                                                                                    target="_blank"> Xác thực email </a>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                </tbody>
-                                                                            </table>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>   
                                                         </td>
                                                     </tr>
                                                 </table>

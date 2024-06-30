@@ -96,6 +96,13 @@ class BrokerRepo implements BrokerRepoInterface
         return $broker;
     }
 
+    public function getUserDetail($broker_id) {
+        return Broker::select(['users.name', 'users.email', 'users.phone'])
+        ->join('users', 'brokers.user_id', '=', 'users.id')
+        ->where('brokers.id', '=', $broker_id)
+        ->first();
+    }
+
     public function getByUserId($userId)
     {
         return Broker::select('id')->where('user_id', $userId)->first();
