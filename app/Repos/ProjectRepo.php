@@ -112,7 +112,7 @@ class ProjectRepo implements ProjectRepoInterface
 
     // Lấy danh sách dự án để cho vào ô chọn dự án dựa trên địa chỉ như thành phố và quận huyện
     public function listProjectOptions($data) {
-        $projects = Project::select(['id', 'name', 'district', 'ward', 'street', 'address'])
+        $projects = Project::select(['id', 'name', 'district', 'ward', 'street', 'address', 'map_iframe'])
         ->where('status', config('status.project.display'))
         ->where('province', 'like', '%' . $data['province'] . '%')
         ->where('district', 'like', '%' . $data['district'] . '%')

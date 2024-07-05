@@ -32,7 +32,8 @@ class Project extends Model
         'builders',
         'designer',
         'status',
-        'number_views'
+        'number_views',
+        'map_iframe'
     ];
 
     protected $attributes = [
