@@ -18,13 +18,13 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('name'); // Tên công ty
-            $table->string('abbreviation');  // Tên viết tắt
+            $table->string('abbreviation')->nullable();  // Tên viết tắt
             $table->text('description')->nullable();
             $table->text('logo');
             $table->string('phone_number');
             $table->string('email');
             $table->string('address');
-            $table->string('website');
+            $table->string('website')->nullable();
             $table->string('business_number'); // Số đăng ký kinh doanh
             $table->text('certificate_url'); // Ảnh giấy phép kinh doanh
             $table->unsignedBigInteger('main_field');  // Lĩnh vực chính

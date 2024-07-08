@@ -76,7 +76,9 @@ class EnterpriseRepo implements EnterpriseRepoInterface
                     ->orWhere('sub_fields.field_id', $field);
                 });
             }
-        $enterprises = $query->paginate(10);
+        $enterprises = $query->get();
+        $ids = $enterprises->pluck('id');
+        $enterprises = Enterprise::select($fields)->whereIn('id', $ids)->paginate(10);
         return $enterprises;
     }
 

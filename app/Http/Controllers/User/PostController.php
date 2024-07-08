@@ -327,7 +327,7 @@ class PostController extends Controller
             $postType = config("postType.$type");
             $posts = $this->postRepo->listByUser($user_id, $postType);
             $posts = PostResource::collection($posts)->values()->all();
-            $perPage = 10; 
+            $perPage = 4; 
             $currentPage = request('page', 1);
             $pagedResults = array_slice($posts, ($currentPage - 1) * $perPage, $perPage);
             $posts = new LengthAwarePaginator($pagedResults, count($posts), $perPage, $currentPage);
